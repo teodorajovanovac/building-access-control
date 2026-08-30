@@ -1,0 +1,60 @@
+@startuml
+title Dijagram slučajeva korišćenja — Stanar
+
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam dpi 150
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor white
+  BorderColor #333333
+  FontColor #222222
+}
+skinparam actor {
+  BackgroundColor white
+  BorderColor #333333
+}
+
+actor "Stanar\n(RESIDENT)" as Stanar
+
+rectangle "Sistem za kontrolu pristupa" {
+  usecase "SK1 Prijava korisnika" as UC1
+  usecase "SK2 Registracija stanara" as UC2
+  usecase "SK3 Kreiranje propusnice za gosta" as UC3
+  usecase "SK4 Izmena/produženje propusnice" as UC4
+  usecase "SK5 Otkazivanje propusnice" as UC5
+  usecase "SK6 Pregled sopstvenih propusnica i istorije" as UC6
+  usecase "SK7 Pregled evidencije ulazaka za svoj stan" as UC7
+}
+
+Stanar --> UC1
+Stanar --> UC2
+Stanar --> UC3
+Stanar --> UC4
+Stanar --> UC5
+Stanar --> UC6
+Stanar --> UC7
+
+UC4 ..> UC6 : <<extend>>
+UC5 ..> UC6 : <<extend>>
+
+note bottom of UC2
+Stanar pri registraciji automatski
+dobija lični bedž kod i QR kod za
+sopstveni brzi ulazak (v. SK9).
+end note
+
+note bottom of UC3
+Sistem generiše jedinstven kod i QR kod
+propusnice; stanar ih odmah vidi i sam
+prosleđuje gostu (kod, QR, javni link).
+end note
+
+note bottom of UC4
+Dozvoljeno samo dok je propusnica u
+statusu ACTIVE. Nakon USED_UP/EXPIRED/
+CANCELED propusnica je nepromenljiva.
+end note
+
+@enduml

@@ -1,0 +1,87 @@
+@startuml
+title Dijagram slučajeva korišćenja — Obezbeđenje i Menadžer
+
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam dpi 150
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor white
+  BorderColor #333333
+  FontColor #222222
+}
+skinparam actor {
+  BackgroundColor white
+  BorderColor #333333
+}
+
+actor "Obezbeđenje\n(SECURITY)" as Obezbedjenje
+actor "Menadžer/Administrator\n(ADMIN)" as Admin
+
+rectangle "Sistem za kontrolu pristupa" {
+  usecase "SK1 Prijava korisnika" as UC1
+  usecase "SK8 Obrada dolaska gosta\n(kod/QR propusnice)" as UC8
+  usecase "SK9 Obrada dolaska stanara/osoblja\n(lični bedž)" as UC9
+  usecase "SK10 Ručna pretraga\n(rezervna opcija)" as UC10
+  usecase "SK11 Odbijanje ulaska sa razlogom" as UC11
+  usecase "SK12 Pregled dnevne evidencije\ni odbijenih pokušaja" as UC12
+
+  usecase "SK13 Upravljanje zgradama" as UC13
+  usecase "SK14 Upravljanje stanovima" as UC14
+  usecase "SK15 Upravljanje korisnicima" as UC15
+  usecase "SK16 Upravljanje osobljem zgrade" as UC16
+  usecase "SK17 Pretraga/filtriranje/\nsortiranje/paginacija" as UC17
+  usecase "SK18 Pregled statistike\nposećenosti" as UC18
+}
+
+Obezbedjenje --> UC1
+Obezbedjenje --> UC8
+Obezbedjenje --> UC9
+Obezbedjenje --> UC10
+Obezbedjenje --> UC11
+Obezbedjenje --> UC12
+Obezbedjenje --> UC17
+Obezbedjenje --> UC18
+
+Admin --> UC1
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC16
+Admin --> UC17
+Admin --> UC18
+
+UC11 ..> UC8 : <<extend>>
+UC11 ..> UC9 : <<extend>>
+UC10 ..> UC9 : <<extend>>
+
+note bottom of UC8
+Odobrava ulazak samo ako je propusnica
+ACTIVE, nije istekla i nije dostigla
+maxUlazaka. U suprotnom grana ide na SK11.
+end note
+
+note bottom of UC9
+Sistem sam prepoznaje tip koda i
+automatski naizmenično beleži ulazak/
+izlazak — obezbeđenje ne bira dugme.
+end note
+
+note bottom of UC10
+Koristi se samo kad osoba nema kod/QR
+pri ruci — isti ishod kao SK9, alternativni put.
+end note
+
+note bottom of UC11
+Automatski (sistem otkrije nevalidan kod)
+ili ručno (obezbeđenje svesno odbije uz
+obavezan razlog) — oba se evidentiraju.
+end note
+
+note bottom of UC16
+Osoblje nema korisnički nalog — samo
+ime, opis uloge i generisani bedž kod.
+end note
+
+@enduml

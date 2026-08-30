@@ -1,0 +1,194 @@
+@startuml
+title Konceptualni model — Sistem za kontrolu pristupa u zgradu
+
+top to bottom direction
+hide empty members
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam dpi 150
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor white
+  BorderColor #333333
+  ArrowColor #333333
+  FontColor #222222
+  HeaderBackgroundColor white
+}
+
+class Zgrada {
+  id : Long
+  naziv : String
+  adresa : String
+}
+
+class Stan {
+  id : Long
+  broj : String
+  sprat : int
+}
+
+class Korisnik {
+  id : Long
+  ime : String
+  prezime : String
+  email : String
+  lozinka : String
+  uloga : Uloga
+  bedzKod : String
+}
+
+class Osoblje {
+  id : Long
+  imePrezime : String
+  opisUloge : String
+  bedzKod : String
+  aktivan : boolean
+}
+
+class Propusnica {
+  id : Long
+  kod : String
+  imeGosta : String
+  telefonGosta : String
+  emailGosta : String
+  razlog : String
+  vaziOd : LocalDateTime
+  vaziDo : LocalDateTime
+  maxUlazaka : int
+  iskorisceniUlazaka : int
+  tip : TipPropusnice
+  status : StatusPropusnice
+  datumKreiranja : LocalDateTime
+}
+
+class EvidencijaUlaska {
+  id : Long
+  tipOsobe : TipOsobe
+  imeOsobe : String
+  vremeUlaska : LocalDateTime
+  vremeIzlaska : LocalDateTime
+  napomena : String
+}
+
+class OdbijenPokusaj {
+  id : Long
+  unetiKod : String
+  imeOsobe : String
+  vremePokusaja : LocalDateTime
+  tipRazloga : TipRazlogaOdbijanja
+  napomena : String
+}
+
+class IstorijaPropusnice {
+  id : Long
+  prethodniStatus : StatusPropusnice
+  noviStatus : StatusPropusnice
+  datumPromene : LocalDateTime
+}
+
+Zgrada "1" *-- "0..*" Stan : sadrži
+note on link
+Stan ne postoji bez Zgrade, briše se
+kaskadno sa zgradom — osim ako ima
+propusnice/evidenciju (zaštita istorije).
+end note
+
+Stan "1" -- "0..*" Korisnik : nastanjuju
+note on link
+Samo za ulogu STANAR — jedan stan
+može imati više registrovanih stanara.
+end note
+
+Zgrada "1" -- "0..*" Korisnik : zaposlenje
+note on link
+Samo za ulogu OBEZBEĐENJE — radnik je
+u datom trenutku vezan za jednu zgradu;
+admin menja pri promeni mesta rada.
+end note
+
+Korisnik "1" -- "0..*" Propusnica : kreira
+note on link
+Samo stanar kreira propusnicu; propusnica
+je uvek vezana i za njegov Stan.
+end note
+
+Propusnica "1" *-- "0..*" EvidencijaUlaska : ulazak gosta
+note on link
+Kompozicija: zapis evidencije za gosta
+ne postoji bez propusnice. Obično jedan
+zapis po ulasku (do maxUlazaka propusnice).
+end note
+
+Korisnik "1" -- "0..*" EvidencijaUlaska : obradio (obezbeđenje)
+Korisnik "1" -- "0..*" EvidencijaUlaska : evidentiran (stanar, lični bedž)
+note on link
+Kreira se skeniranjem/unosom Korisnikovog
+bedzKod-a, ne ručnim biranjem sa liste.
+Ulazak/izlazak se određuju automatski
+naizmenično prema poslednjem zapisu.
+end note
+
+Osoblje "1" -- "0..*" EvidencijaUlaska : evidentiran (osoblje, lični bedž)
+note on link
+Isti princip kao za stanara — bedzKod
+skeniran/unet, entry/exit naizmenično.
+Osoblje nema nalog ni lozinku.
+end note
+
+Zgrada "1" -- "0..*" EvidencijaUlaska
+Zgrada "1" -- "0..*" Osoblje : zapošljava
+
+Propusnica "0..1" -- "0..*" OdbijenPokusaj : pokušaj na
+note on link
+Nullable — pokušaj sa nepostojećim
+kodom nema vezanu propusnicu.
+end note
+
+Korisnik "1" -- "0..*" OdbijenPokusaj : evidentiralo (obezbeđenje)
+Zgrada "1" -- "0..*" OdbijenPokusaj
+
+Propusnica "1" *-- "0..*" IstorijaPropusnice : prati promene
+note on link
+Istorija je deo propusnice i briše se
+kaskadno sa njom.
+end note
+
+Korisnik "1" -- "0..*" IstorijaPropusnice : menja status
+
+note right of Korisnik
+Uloga:
+RESIDENT (stanar)
+SECURITY (obezbeđenje)
+ADMIN (menadžer)
+end note
+
+note bottom of Propusnica
+TipPropusnice:
+SINGLE, LIMITED, RECURRING
+
+StatusPropusnice:
+ACTIVE → USED_UP / EXPIRED / CANCELED
+end note
+
+note bottom of EvidencijaUlaska
+TipOsobe:
+GOST, STANAR, OSOBLJE
+end note
+
+note bottom of OdbijenPokusaj
+TipRazlogaOdbijanja:
+NEVALIDAN_KOD, ISTEKLA, ISKORISCENA,
+OTKAZANA, RUCNO_ODBIJANJE
+
+Automatski: sistem sam upisuje zapis kad
+uneti/skenirani kod (propusnice, stanara
+ili osoblja) ne prođe validaciju.
+Ručno: obezbeđenje svesno odbije ulazak
+(validnoj ili nepoznatoj osobi) i MORA
+da unese napomenu (razlog).
+end note
+
+note "Jedinstven tok za obezbeđenje: unesi/skeniraj\nkod — sistem sam prepozna da li je propusnica,\nlični kod stanara ili kod osoblja, i da li je\nreč o ulasku ili izlasku. Ručna pretraga liste\nostaje samo kao rezervna opcija." as Napomena
+
+
+@enduml
