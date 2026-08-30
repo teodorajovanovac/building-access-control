@@ -4,9 +4,11 @@ import com.buildingaccess.dto.access.ManualDenyRequest;
 import com.buildingaccess.dto.access.PersonSearchResponse;
 import com.buildingaccess.dto.access.ScanRequest;
 import com.buildingaccess.dto.access.ScanResultResponse;
+import com.buildingaccess.dto.user.UserResponse;
 import com.buildingaccess.model.User;
 import com.buildingaccess.model.enums.PersonType;
 import com.buildingaccess.service.AccessProcessingService;
+import com.buildingaccess.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,13 @@ import java.util.List;
 public class AccessController {
 
     private final AccessProcessingService accessProcessingService;
+    private final UserService userService;
+
+    /** Obezbeđenju treba sopstvena zgrada (id) da bi pozvalo npr. statistiku bez ručnog unosa. */
+    @GetMapping("/me")
+    public UserResponse me(@AuthenticationPrincipal User security) {
+        return userService.getById(security.getId());
+    }
 
     /** Jedinstveni ulaz za sve dolaske — sistem sam prepoznaje propusnicu / lični kod stanara / kod osoblja. */
     @PostMapping("/access/scan")
