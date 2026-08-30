@@ -21,6 +21,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByRole(Role role);
 
+    boolean existsByRole(Role role);
+
     List<User> findByRoleAndBuildingId(Role role, Long buildingId);
 
     List<User> findByApartmentId(Long apartmentId);
