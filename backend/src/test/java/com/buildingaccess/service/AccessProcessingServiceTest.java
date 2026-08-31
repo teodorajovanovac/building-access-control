@@ -9,7 +9,6 @@ import com.buildingaccess.model.Apartment;
 import com.buildingaccess.model.Building;
 import com.buildingaccess.model.EntryLog;
 import com.buildingaccess.model.GatePass;
-import com.buildingaccess.model.StaffBadge;
 import com.buildingaccess.model.User;
 import com.buildingaccess.model.enums.DenialReasonType;
 import com.buildingaccess.model.enums.GatePassStatus;
@@ -19,7 +18,6 @@ import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.repository.AccessDenialRepository;
 import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.repository.GatePassRepository;
-import com.buildingaccess.repository.StaffBadgeRepository;
 import com.buildingaccess.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,8 +53,6 @@ class AccessProcessingServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private StaffBadgeRepository staffBadgeRepository;
-    @Mock
     private EntryLogRepository entryLogRepository;
     @Mock
     private AccessDenialRepository accessDenialRepository;
@@ -71,7 +67,7 @@ class AccessProcessingServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new AccessProcessingService(gatePassRepository, userRepository, staffBadgeRepository,
+        service = new AccessProcessingService(gatePassRepository, userRepository,
                 entryLogRepository, accessDenialRepository, gatePassService);
 
         building = Building.builder().id(1L).name("Zgrada A").address("Adresa 1").build();
@@ -217,7 +213,7 @@ class AccessProcessingServiceTest {
         User resident = User.builder().id(20L).firstName("Ana").lastName("Anić").role(Role.RESIDENT)
                 .badgeCode("RES-AAAA1111").apartment(apartment).build();
         when(gatePassRepository.findByCode("RES-AAAA1111")).thenReturn(Optional.empty());
-        when(userRepository.findByBadgeCodeAndRole("RES-AAAA1111", Role.RESIDENT)).thenReturn(Optional.of(resident));
+        when(userRepository.findByBadgeCode("RES-AAAA1111")).thenReturn(Optional.of(resident));
         when(entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(20L)).thenReturn(Optional.empty());
 
         ScanResultResponse result = service.processScan("RES-AAAA1111", security);
@@ -241,7 +237,7 @@ class AccessProcessingServiceTest {
                 .entryTime(LocalDateTime.now().minusHours(2)).exitTime(null).user(resident).build();
 
         when(gatePassRepository.findByCode("RES-AAAA1111")).thenReturn(Optional.empty());
-        when(userRepository.findByBadgeCodeAndRole("RES-AAAA1111", Role.RESIDENT)).thenReturn(Optional.of(resident));
+        when(userRepository.findByBadgeCode("RES-AAAA1111")).thenReturn(Optional.of(resident));
         when(entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(20L)).thenReturn(Optional.of(openLog));
 
         ScanResultResponse result = service.processScan("RES-AAAA1111", security);
@@ -253,17 +249,41 @@ class AccessProcessingServiceTest {
     }
 
     @Test
-    void processScan_staffBadge_togglesEntryThenExit() {
-        StaffBadge staff = StaffBadge.builder().id(30L).fullName("Marko Održavanje")
-                .badgeCode("STF-B1B1B1B1").active(true).building(building).build();
+    void processScan_staffBadge_noPriorLog_recordsEntry() {
+        User staff = User.builder().id(30L).firstName("Marko").lastName("Održavanje").role(Role.STAFF)
+                .jobTitle("Održavanje").badgeCode("STF-B1B1B1B1").building(building).build();
         when(gatePassRepository.findByCode("STF-B1B1B1B1")).thenReturn(Optional.empty());
-        when(userRepository.findByBadgeCodeAndRole("STF-B1B1B1B1", Role.RESIDENT)).thenReturn(Optional.empty());
-        when(staffBadgeRepository.findByBadgeCodeAndActiveTrue("STF-B1B1B1B1")).thenReturn(Optional.of(staff));
-        when(entryLogRepository.findFirstByStaffBadgeIdOrderByEntryTimeDesc(30L)).thenReturn(Optional.empty());
+        when(userRepository.findByBadgeCode("STF-B1B1B1B1")).thenReturn(Optional.of(staff));
+        when(entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(30L)).thenReturn(Optional.empty());
 
         ScanResultResponse entry = service.processScan("STF-B1B1B1B1", security);
+
         assertThat(entry.outcome()).isEqualTo(ScanOutcome.ENTRY_RECORDED);
         assertThat(entry.personType()).isEqualTo(PersonType.STAFF);
+        assertThat(entry.personName()).isEqualTo("Marko Održavanje");
+
+        ArgumentCaptor<EntryLog> captor = ArgumentCaptor.forClass(EntryLog.class);
+        verify(entryLogRepository).save(captor.capture());
+        assertThat(captor.getValue().getUser()).isEqualTo(staff);
+        assertThat(captor.getValue().getPersonType()).isEqualTo(PersonType.STAFF);
+    }
+
+    @Test
+    void processScan_staffBadge_secondConsecutiveScan_recordsExit() {
+        User staff = User.builder().id(30L).firstName("Marko").lastName("Održavanje").role(Role.STAFF)
+                .jobTitle("Održavanje").badgeCode("STF-B1B1B1B1").building(building).build();
+        EntryLog openLog = EntryLog.builder().id(901L).personType(PersonType.STAFF)
+                .entryTime(LocalDateTime.now().minusHours(1)).exitTime(null).user(staff).build();
+
+        when(gatePassRepository.findByCode("STF-B1B1B1B1")).thenReturn(Optional.empty());
+        when(userRepository.findByBadgeCode("STF-B1B1B1B1")).thenReturn(Optional.of(staff));
+        when(entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(30L)).thenReturn(Optional.of(openLog));
+
+        ScanResultResponse exit = service.processScan("STF-B1B1B1B1", security);
+
+        assertThat(exit.outcome()).isEqualTo(ScanOutcome.EXIT_RECORDED);
+        assertThat(openLog.getExitTime()).isNotNull();
+        verify(entryLogRepository, never()).save(any());
     }
 
     // ---------- SK11 — nevalidan kod ----------
@@ -271,8 +291,7 @@ class AccessProcessingServiceTest {
     @Test
     void processScan_unrecognizedCode_isDeniedWithInvalidCodeReason() {
         when(gatePassRepository.findByCode("NEPOSTOJI")).thenReturn(Optional.empty());
-        when(userRepository.findByBadgeCodeAndRole("NEPOSTOJI", Role.RESIDENT)).thenReturn(Optional.empty());
-        when(staffBadgeRepository.findByBadgeCodeAndActiveTrue("NEPOSTOJI")).thenReturn(Optional.empty());
+        when(userRepository.findByBadgeCode("NEPOSTOJI")).thenReturn(Optional.empty());
 
         ScanResultResponse result = service.processScan("NEPOSTOJI", security);
 
@@ -319,10 +338,27 @@ class AccessProcessingServiceTest {
 
     @Test
     void processManual_staffNotFound_throwsResourceNotFound() {
-        when(staffBadgeRepository.findById(999L)).thenReturn(Optional.empty());
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.processManual(PersonType.STAFF, 999L, security))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void processManual_staff_recordsEntryWithManualFlag() {
+        User staff = User.builder().id(31L).firstName("Nina").lastName("Čistačica").role(Role.STAFF)
+                .jobTitle("Čišćenje").building(building).build();
+        when(userRepository.findById(31L)).thenReturn(Optional.of(staff));
+        when(entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(31L)).thenReturn(Optional.empty());
+
+        ScanResultResponse result = service.processManual(PersonType.STAFF, 31L, security);
+
+        assertThat(result.outcome()).isEqualTo(ScanOutcome.ENTRY_RECORDED);
+        assertThat(result.personType()).isEqualTo(PersonType.STAFF);
+        ArgumentCaptor<EntryLog> captor = ArgumentCaptor.forClass(EntryLog.class);
+        verify(entryLogRepository).save(captor.capture());
+        assertThat(captor.getValue().isManualEntry()).isTrue();
+        assertThat(captor.getValue().getUser()).isEqualTo(staff);
     }
 
     @Test

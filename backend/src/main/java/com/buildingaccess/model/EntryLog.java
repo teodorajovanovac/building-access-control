@@ -52,15 +52,10 @@ public class EntryLog {
     @JoinColumn(name = "gate_pass_id")
     private GatePass gatePass;
 
-    /** Samo za RESIDENT. */
+    /** Za RESIDENT i STAFF. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
-    /** Samo za STAFF. */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "staff_badge_id")
-    private StaffBadge staffBadge;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "building_id", nullable = false)

@@ -4,14 +4,13 @@ import com.buildingaccess.dto.building.BuildingRequest;
 import com.buildingaccess.exception.InvalidStatusException;
 import com.buildingaccess.model.Apartment;
 import com.buildingaccess.model.Building;
-import com.buildingaccess.model.StaffBadge;
 import com.buildingaccess.model.User;
 import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.repository.AccessDenialRepository;
 import com.buildingaccess.repository.BuildingRepository;
 import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.repository.GatePassRepository;
-import com.buildingaccess.repository.StaffBadgeRepository;
+import com.buildingaccess.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +34,7 @@ class BuildingServiceTest {
     @Mock
     private BuildingRepository buildingRepository;
     @Mock
-    private StaffBadgeRepository staffBadgeRepository;
+    private UserRepository userRepository;
     @Mock
     private GatePassRepository gatePassRepository;
     @Mock
@@ -47,20 +46,20 @@ class BuildingServiceTest {
 
     @BeforeEach
     void setUp() {
-        buildingService = new BuildingService(buildingRepository, staffBadgeRepository, gatePassRepository,
+        buildingService = new BuildingService(buildingRepository, userRepository, gatePassRepository,
                 entryLogRepository, accessDenialRepository);
     }
 
-    private Building buildingWith(List<Apartment> apartments, List<StaffBadge> staffBadges) {
+    private Building buildingWith(List<Apartment> apartments) {
         return Building.builder().id(1L).name("Zgrada A").address("Adresa 1")
-                .apartments(apartments).staffBadges(staffBadges).build();
+                .apartments(apartments).build();
     }
 
     @Test
     void delete_apartmentHasResidents_throwsInvalidStatus() {
         Apartment apartment = Apartment.builder().id(10L).number("1")
                 .residents(List.of(User.builder().id(1L).role(Role.RESIDENT).build())).build();
-        Building building = buildingWith(List.of(apartment), List.of());
+        Building building = buildingWith(List.of(apartment));
         when(buildingRepository.findById(1L)).thenReturn(Optional.of(building));
 
         assertThatThrownBy(() -> buildingService.delete(1L)).isInstanceOf(InvalidStatusException.class);
@@ -70,7 +69,7 @@ class BuildingServiceTest {
     @Test
     void delete_apartmentHasGatePasses_throwsInvalidStatus() {
         Apartment apartment = Apartment.builder().id(10L).number("1").residents(new ArrayList<>()).build();
-        Building building = buildingWith(List.of(apartment), List.of());
+        Building building = buildingWith(List.of(apartment));
         when(buildingRepository.findById(1L)).thenReturn(Optional.of(building));
         when(gatePassRepository.existsByApartmentId(10L)).thenReturn(true);
 
@@ -78,16 +77,27 @@ class BuildingServiceTest {
     }
 
     @Test
-    void delete_buildingHasStaffBadges_throwsInvalidStatus() {
-        Building building = buildingWith(List.of(), List.of(StaffBadge.builder().id(1L).build()));
+    void delete_buildingHasStaff_throwsInvalidStatus() {
+        Building building = buildingWith(List.of());
         when(buildingRepository.findById(1L)).thenReturn(Optional.of(building));
+        when(userRepository.existsByRoleAndBuildingId(Role.STAFF, 1L)).thenReturn(true);
+
+        assertThatThrownBy(() -> buildingService.delete(1L)).isInstanceOf(InvalidStatusException.class);
+    }
+
+    @Test
+    void delete_buildingHasAssignedSecurity_throwsInvalidStatus() {
+        Building building = buildingWith(List.of());
+        when(buildingRepository.findById(1L)).thenReturn(Optional.of(building));
+        lenient().when(userRepository.existsByRoleAndBuildingId(Role.STAFF, 1L)).thenReturn(false);
+        when(userRepository.existsByRoleAndBuildingId(Role.SECURITY, 1L)).thenReturn(true);
 
         assertThatThrownBy(() -> buildingService.delete(1L)).isInstanceOf(InvalidStatusException.class);
     }
 
     @Test
     void delete_hasEntryLogs_throwsInvalidStatus() {
-        Building building = buildingWith(List.of(), List.of());
+        Building building = buildingWith(List.of());
         when(buildingRepository.findById(1L)).thenReturn(Optional.of(building));
         when(entryLogRepository.existsByBuildingId(1L)).thenReturn(true);
 
@@ -96,7 +106,7 @@ class BuildingServiceTest {
 
     @Test
     void delete_hasAccessDenials_throwsInvalidStatus() {
-        Building building = buildingWith(List.of(), List.of());
+        Building building = buildingWith(List.of());
         when(buildingRepository.findById(1L)).thenReturn(Optional.of(building));
         lenient().when(entryLogRepository.existsByBuildingId(1L)).thenReturn(false);
         when(accessDenialRepository.existsByBuildingId(1L)).thenReturn(true);
@@ -106,7 +116,7 @@ class BuildingServiceTest {
 
     @Test
     void delete_noDependentData_deletesBuilding() {
-        Building building = buildingWith(List.of(), List.of());
+        Building building = buildingWith(List.of());
         when(buildingRepository.findById(1L)).thenReturn(Optional.of(building));
         when(entryLogRepository.existsByBuildingId(1L)).thenReturn(false);
         when(accessDenialRepository.existsByBuildingId(1L)).thenReturn(false);

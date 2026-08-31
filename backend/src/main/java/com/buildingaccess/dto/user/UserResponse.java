@@ -16,6 +16,7 @@ public record UserResponse(
         String apartmentNumber,
         Long buildingId,
         String buildingName,
+        String jobTitle,
         LocalDateTime createdAt
 ) {
 }

@@ -197,7 +197,7 @@ export default function UsersPage() {
                   <TableCell sx={{ fontFamily: 'monospace' }}>{u.badgeCode || '—'}</TableCell>
                   <TableCell>
                     {u.role === 'RESIDENT' && (u.apartmentNumber ? `Stan ${u.apartmentNumber} — ${u.buildingName}` : '—')}
-                    {u.role === 'SECURITY' && (u.buildingName || '—')}
+                    {(u.role === 'SECURITY' || u.role === 'STAFF') && (u.buildingName || '—')}
                     {u.role === 'ADMIN' && '—'}
                   </TableCell>
                   <TableCell align="right">

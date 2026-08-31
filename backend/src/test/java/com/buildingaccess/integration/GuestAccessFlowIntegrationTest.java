@@ -90,7 +90,7 @@ class GuestAccessFlowIntegrationTest {
 
         // Admin kreira nalog obezbeđenja dodeljen ovoj zgradi (SK15).
         UserCreateRequest securityRequest = new UserCreateRequest("Pera", "Perić", "security-guest-flow@example.com",
-                "lozinka1", Role.SECURITY, null, buildingId);
+                "lozinka1", Role.SECURITY, null, buildingId, null);
         mockMvc.perform(post("/api/admin/users")
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)

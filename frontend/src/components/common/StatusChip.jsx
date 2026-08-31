@@ -25,6 +25,7 @@ const ROLE = {
   RESIDENT: { label: 'Stanar', color: 'primary' },
   SECURITY: { label: 'Obezbeđenje', color: 'secondary' },
   ADMIN: { label: 'Administrator', color: 'default' },
+  STAFF: { label: 'Osoblje', color: 'info' },
 };
 
 const GATE_PASS_TYPE = {

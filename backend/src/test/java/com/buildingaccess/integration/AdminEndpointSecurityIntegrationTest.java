@@ -115,7 +115,7 @@ class AdminEndpointSecurityIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new com.buildingaccess.dto.user.UserCreateRequest(
                                 "Sec", "Urity", "security-authz-test@example.com", "lozinka1",
-                                com.buildingaccess.model.enums.Role.SECURITY, null, buildingId))))
+                                com.buildingaccess.model.enums.Role.SECURITY, null, buildingId, null))))
                 .andExpect(status().isCreated());
 
         String securityToken = login("security-authz-test@example.com", "lozinka1");

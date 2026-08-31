@@ -22,6 +22,7 @@ public final class UserMapper {
                 user.getApartment() != null ? user.getApartment().getNumber() : null,
                 user.getBuilding() != null ? user.getBuilding().getId() : null,
                 user.getBuilding() != null ? user.getBuilding().getName() : null,
+                user.getJobTitle(),
                 user.getCreatedAt()
         );
     }

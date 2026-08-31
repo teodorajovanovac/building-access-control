@@ -17,11 +17,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByBadgeCode(String badgeCode);
 
+    Optional<User> findByBadgeCode(String badgeCode);
+
     Optional<User> findByBadgeCodeAndRole(String badgeCode, Role role);
 
     List<User> findByRole(Role role);
 
     boolean existsByRole(Role role);
+
+    boolean existsByRoleAndBuildingId(Role role, Long buildingId);
 
     List<User> findByRoleAndBuildingId(Role role, Long buildingId);
 
@@ -38,4 +42,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
             order by u.lastName, u.firstName
             """)
     List<User> searchResidentsInBuilding(@Param("buildingId") Long buildingId, @Param("query") String query);
+
+    /** SK10 — osoblje (STAFF) ima building popunjen direktno (za razliku od RESIDENT preko apartment.building). */
+    @Query("""
+            select u from User u
+            where u.role = com.buildingaccess.model.enums.Role.STAFF
+              and u.building.id = :buildingId
+              and lower(concat(u.firstName, ' ', u.lastName)) like lower(concat('%', :query, '%'))
+            order by u.lastName, u.firstName
+            """)
+    List<User> searchStaffInBuilding(@Param("buildingId") Long buildingId, @Param("query") String query);
 }

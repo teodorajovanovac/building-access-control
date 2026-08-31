@@ -52,21 +52,24 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
-    /** Trajni lični kod za ulazak — generiše se automatski samo za RESIDENT (v. napomena u programski_zahtev). */
+    /** Trajni lični kod za ulazak — generiše se automatski za RESIDENT i STAFF. */
     @Column(unique = true)
     private String badgeCode;
 
     private LocalDateTime createdAt;
 
-    /** Obavezno za RESIDENT, null za SECURITY/ADMIN. */
+    /** Obavezno za RESIDENT, null za SECURITY/ADMIN/STAFF. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "apartment_id")
     private Apartment apartment;
 
-    /** Trenutna zgrada rada — obavezno za SECURITY, null za RESIDENT/ADMIN. */
+    /** Trenutna zgrada rada — obavezno za SECURITY i STAFF, null za RESIDENT/ADMIN. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "building_id")
     private Building building;
+
+    /** Samo za STAFF. */
+    private String jobTitle;
 
     // --- UserDetails ---
 

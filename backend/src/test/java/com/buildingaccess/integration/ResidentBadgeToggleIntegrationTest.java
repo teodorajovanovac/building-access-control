@@ -79,7 +79,7 @@ class ResidentBadgeToggleIntegrationTest {
         Long apartmentId = objectMapper.readValue(apartmentBody, ApartmentResponse.class).id();
 
         UserCreateRequest securityRequest = new UserCreateRequest("Jovan", "Jovanović", "security-badge-flow@example.com",
-                "lozinka1", Role.SECURITY, null, buildingId);
+                "lozinka1", Role.SECURITY, null, buildingId, null);
         mockMvc.perform(post("/api/admin/users")
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)

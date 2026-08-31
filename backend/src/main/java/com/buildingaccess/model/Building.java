@@ -36,8 +36,4 @@ public class Building {
     @Builder.Default
     @OneToMany(mappedBy = "building", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Apartment> apartments = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "building")
-    private List<StaffBadge> staffBadges = new ArrayList<>();
 }

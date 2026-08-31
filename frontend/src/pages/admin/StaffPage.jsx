@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Paper,
   Table,
@@ -18,15 +18,12 @@ import {
   Stack,
   CircularProgress,
   Box,
-  Chip,
-  Switch,
-  FormControlLabel,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
-import { createStaff, deleteStaff, getStaffByBuilding, updateStaff } from '../../api/staff';
+import { createUser, deleteUser, getUsers, updateUser } from '../../api/users';
 import { getBuildings } from '../../api/buildings';
 import { extractErrorMessage } from '../../api/client';
 import LoadingBox from '../../components/common/LoadingBox';
@@ -35,16 +32,18 @@ import PageHeader from '../../components/common/PageHeader';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import QrCodeImage from '../../components/common/QrCodeImage';
 
+const EMPTY_FORM = { firstName: '', lastName: '', email: '', password: '', jobTitle: '' };
+
 export default function StaffPage() {
   const [buildings, setBuildings] = useState([]);
   const [buildingId, setBuildingId] = useState('');
-  const [staff, setStaff] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ fullName: '', jobTitle: '', active: true });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
@@ -62,28 +61,38 @@ export default function StaffPage() {
   }, []);
 
   const load = useCallback(() => {
-    if (!buildingId) return;
     setLoading(true);
-    getStaffByBuilding(buildingId)
-      .then(setStaff)
+    getUsers()
+      .then(setUsers)
       .catch((err) => setError(extractErrorMessage(err)))
       .finally(() => setLoading(false));
-  }, [buildingId]);
+  }, []);
 
   useEffect(() => {
     load();
   }, [load]);
 
+  const staff = useMemo(
+    () => users.filter((u) => u.role === 'STAFF' && (!buildingId || String(u.buildingId) === String(buildingId))),
+    [users, buildingId]
+  );
+
   const openCreate = () => {
     setEditing(null);
-    setForm({ fullName: '', jobTitle: '', active: true });
+    setForm(EMPTY_FORM);
     setFormError('');
     setDialogOpen(true);
   };
 
-  const openEdit = (s) => {
-    setEditing(s);
-    setForm({ fullName: s.fullName, jobTitle: s.jobTitle, active: s.active });
+  const openEdit = (u) => {
+    setEditing(u);
+    setForm({
+      firstName: u.firstName,
+      lastName: u.lastName,
+      email: u.email,
+      password: '',
+      jobTitle: u.jobTitle || '',
+    });
     setFormError('');
     setDialogOpen(true);
   };
@@ -93,14 +102,24 @@ export default function StaffPage() {
     setFormError('');
     try {
       if (editing) {
-        await updateStaff(editing.id, form);
+        await updateUser(editing.id, {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          apartmentId: null,
+          buildingId: Number(buildingId),
+          jobTitle: form.jobTitle,
+        });
         setDialogOpen(false);
         load();
       } else {
-        const created = await createStaff({
-          fullName: form.fullName,
-          jobTitle: form.jobTitle,
+        const created = await createUser({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          password: form.password,
+          role: 'STAFF',
           buildingId: Number(buildingId),
+          jobTitle: form.jobTitle,
         });
         setDialogOpen(false);
         load();
@@ -116,7 +135,7 @@ export default function StaffPage() {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await deleteStaff(deleteTarget.id);
+      await deleteUser(deleteTarget.id);
       setDeleteTarget(null);
       load();
     } catch (err) {
@@ -131,7 +150,7 @@ export default function StaffPage() {
     <>
       <PageHeader
         title="Osoblje zgrade"
-        subtitle="Osoblje (npr. održavanje) sa ličnim bedž kodom za ulazak — bez korisničkog naloga"
+        subtitle="Osoblje (npr. održavanje, recepcija) — nalog sa prijavom i automatski dodeljenim bedž kodom, kao i stanari"
         action={
           <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} disabled={!buildingId}>
             Novi član osoblja
@@ -158,25 +177,21 @@ export default function StaffPage() {
             <TableHead>
               <TableRow>
                 <TableCell>Ime</TableCell>
+                <TableCell>Email</TableCell>
                 <TableCell>Uloga / opis</TableCell>
                 <TableCell>Bedž kod</TableCell>
-                <TableCell>Status</TableCell>
                 <TableCell align="right">Akcije</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {staff.map((s) => (
                 <TableRow key={s.id} hover>
-                  <TableCell>{s.fullName}</TableCell>
-                  <TableCell>{s.jobTitle}</TableCell>
-                  <TableCell sx={{ fontFamily: 'monospace' }}>{s.badgeCode}</TableCell>
                   <TableCell>
-                    <Chip
-                      label={s.active ? 'Aktivan' : 'Deaktiviran'}
-                      color={s.active ? 'success' : 'default'}
-                      size="small"
-                    />
+                    {s.firstName} {s.lastName}
                   </TableCell>
+                  <TableCell>{s.email}</TableCell>
+                  <TableCell>{s.jobTitle || '—'}</TableCell>
+                  <TableCell sx={{ fontFamily: 'monospace' }}>{s.badgeCode || '—'}</TableCell>
                   <TableCell align="right">
                     <Tooltip title="Prikaži bedž/QR">
                       <IconButton size="small" onClick={() => setBadgeView(s)}>
@@ -213,32 +228,50 @@ export default function StaffPage() {
         <DialogContent>
           <ErrorAlert message={formError} />
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              label="Ime i prezime"
-              value={form.fullName}
-              onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-              required
-              fullWidth
-              autoFocus
-            />
+            <Stack direction="row" spacing={2}>
+              <TextField
+                label="Ime"
+                value={form.firstName}
+                onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
+                required
+                fullWidth
+                autoFocus
+              />
+              <TextField
+                label="Prezime"
+                value={form.lastName}
+                onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
+                required
+                fullWidth
+              />
+            </Stack>
+            {!editing && (
+              <>
+                <TextField
+                  label="Email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                  required
+                  fullWidth
+                />
+                <TextField
+                  label="Lozinka"
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                  helperText="Najmanje 6 karaktera"
+                  required
+                  fullWidth
+                />
+              </>
+            )}
             <TextField
               label="Uloga / opis (npr. Održavanje)"
               value={form.jobTitle}
               onChange={(e) => setForm((f) => ({ ...f, jobTitle: e.target.value }))}
-              required
               fullWidth
             />
-            {editing && (
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={form.active}
-                    onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
-                  />
-                }
-                label="Aktivan"
-              />
-            )}
           </Stack>
         </DialogContent>
         <DialogActions>
@@ -248,7 +281,12 @@ export default function StaffPage() {
           <Button
             variant="contained"
             onClick={handleSave}
-            disabled={saving || !form.fullName || !form.jobTitle}
+            disabled={
+              saving ||
+              !form.firstName ||
+              !form.lastName ||
+              (!editing && (!form.email || !form.password))
+            }
             startIcon={saving ? <CircularProgress size={16} color="inherit" /> : null}
           >
             Sačuvaj
@@ -265,7 +303,9 @@ export default function StaffPage() {
               <Box fontWeight={700} fontFamily="monospace" fontSize={18}>
                 {badgeView?.badgeCode}
               </Box>
-              <Box color="text.secondary">{badgeView?.fullName}</Box>
+              <Box color="text.secondary">
+                {badgeView?.firstName} {badgeView?.lastName}
+              </Box>
             </Box>
           </Stack>
         </DialogContent>
@@ -277,7 +317,7 @@ export default function StaffPage() {
       <ConfirmDialog
         open={Boolean(deleteTarget)}
         title="Brisanje člana osoblja"
-        message={`Da li ste sigurni da želite da obrišete "${deleteTarget?.fullName}"?`}
+        message={`Da li ste sigurni da želite da obrišete "${deleteTarget?.firstName} ${deleteTarget?.lastName}"?`}
         confirmLabel="Obriši"
         confirmColor="error"
         onConfirm={handleDelete}

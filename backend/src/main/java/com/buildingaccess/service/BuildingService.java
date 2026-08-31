@@ -7,11 +7,12 @@ import com.buildingaccess.exception.ResourceNotFoundException;
 import com.buildingaccess.mapper.BuildingMapper;
 import com.buildingaccess.model.Apartment;
 import com.buildingaccess.model.Building;
+import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.repository.AccessDenialRepository;
 import com.buildingaccess.repository.BuildingRepository;
 import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.repository.GatePassRepository;
-import com.buildingaccess.repository.StaffBadgeRepository;
+import com.buildingaccess.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,7 @@ import java.util.List;
 public class BuildingService {
 
     private final BuildingRepository buildingRepository;
-    private final StaffBadgeRepository staffBadgeRepository;
+    private final UserRepository userRepository;
     private final GatePassRepository gatePassRepository;
     private final EntryLogRepository entryLogRepository;
     private final AccessDenialRepository accessDenialRepository;
@@ -67,8 +68,11 @@ public class BuildingService {
             throw new InvalidStatusException(
                     "Zgrada ima stanove sa registrovanim stanarima ili propusnicama — obrišite ih prvo.");
         }
-        if (!building.getStaffBadges().isEmpty()) {
+        if (userRepository.existsByRoleAndBuildingId(Role.STAFF, id)) {
             throw new InvalidStatusException("Zgrada ima osoblje — uklonite ga prvo.");
+        }
+        if (userRepository.existsByRoleAndBuildingId(Role.SECURITY, id)) {
+            throw new InvalidStatusException("Zgrada ima dodeljeno obezbeđenje — uklonite ga prvo.");
         }
         if (entryLogRepository.existsByBuildingId(id) || accessDenialRepository.existsByBuildingId(id)) {
             throw new InvalidStatusException("Zgrada ima evidenciju ulazaka ili odbijenih pokušaja — ne može se obrisati.");

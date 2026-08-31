@@ -78,6 +78,13 @@ public class UserService {
                 Building building = buildingService.findEntity(request.buildingId());
                 builder.building(building);
             }
+            case STAFF -> {
+                if (request.buildingId() == null) {
+                    throw new IllegalArgumentException("buildingId je obavezan za ulogu STAFF");
+                }
+                Building building = buildingService.findEntity(request.buildingId());
+                builder.building(building).badgeCode(generateUniqueBadgeCode()).jobTitle(request.jobTitle());
+            }
             case ADMIN -> {
                 // nema dodatnih obaveznih polja
             }
@@ -97,6 +104,12 @@ public class UserService {
         }
         if (user.getRole() == Role.SECURITY && request.buildingId() != null) {
             user.setBuilding(buildingService.findEntity(request.buildingId()));
+        }
+        if (user.getRole() == Role.STAFF) {
+            if (request.buildingId() != null) {
+                user.setBuilding(buildingService.findEntity(request.buildingId()));
+            }
+            user.setJobTitle(request.jobTitle());
         }
 
         return UserMapper.toResponse(user);

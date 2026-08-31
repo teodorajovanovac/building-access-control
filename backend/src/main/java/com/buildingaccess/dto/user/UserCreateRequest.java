@@ -8,7 +8,8 @@ import jakarta.validation.constraints.Size;
 
 /**
  * Admin kreira korisnike bilo koje uloge (SK15).
- * apartmentId je obavezan samo za RESIDENT, buildingId samo za SECURITY (proverava se u service sloju).
+ * apartmentId je obavezan samo za RESIDENT, buildingId za SECURITY i STAFF (proverava se u service sloju).
+ * jobTitle je opcioni i koristi se samo za STAFF.
  */
 public record UserCreateRequest(
         @NotBlank String firstName,
@@ -17,6 +18,7 @@ public record UserCreateRequest(
         @NotBlank @Size(min = 6, message = "Lozinka mora imati bar 6 karaktera") String password,
         @NotNull Role role,
         Long apartmentId,
-        Long buildingId
+        Long buildingId,
+        String jobTitle
 ) {
 }

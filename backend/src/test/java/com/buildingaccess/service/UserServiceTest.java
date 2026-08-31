@@ -65,7 +65,11 @@ class UserServiceTest {
     }
 
     private UserCreateRequest request(Role role, Long apartmentId, Long buildingId) {
-        return new UserCreateRequest("Ime", "Prezime", "user@example.com", "lozinka1", role, apartmentId, buildingId);
+        return new UserCreateRequest("Ime", "Prezime", "user@example.com", "lozinka1", role, apartmentId, buildingId, null);
+    }
+
+    private UserCreateRequest staffRequest(Long buildingId, String jobTitle) {
+        return new UserCreateRequest("Ime", "Prezime", "user@example.com", "lozinka1", Role.STAFF, null, buildingId, jobTitle);
     }
 
     @Test
@@ -123,6 +127,32 @@ class UserServiceTest {
         verify(userRepository).save(captor.capture());
         assertThat(captor.getValue().getBuilding()).isEqualTo(building);
         assertThat(captor.getValue().getBadgeCode()).isNull();
+        assertThat(captor.getValue().getApartment()).isNull();
+    }
+
+    @Test
+    void create_staffWithoutBuildingId_throwsIllegalArgument() {
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+
+        assertThatThrownBy(() -> userService.create(request(Role.STAFF, null, null)))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void create_staff_generatesBadgeCodeAndSetsBuildingAndJobTitle() {
+        Building building = Building.builder().id(30L).name("Zgrada C").build();
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(buildingService.findEntity(30L)).thenReturn(building);
+        when(userRepository.existsByBadgeCode(anyString())).thenReturn(false);
+
+        UserResponse response = userService.create(staffRequest(30L, "Održavanje"));
+
+        assertThat(response.role()).isEqualTo(Role.STAFF);
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+        assertThat(captor.getValue().getBadgeCode()).startsWith("RES-");
+        assertThat(captor.getValue().getBuilding()).isEqualTo(building);
+        assertThat(captor.getValue().getJobTitle()).isEqualTo("Održavanje");
         assertThat(captor.getValue().getApartment()).isNull();
     }
 
@@ -208,7 +238,7 @@ class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(apartmentService.findEntity(99L)).thenReturn(newApartment);
 
-        UserUpdateRequest request = new UserUpdateRequest("Novo", "Ime", 99L, null);
+        UserUpdateRequest request = new UserUpdateRequest("Novo", "Ime", 99L, null, null);
         UserResponse response = userService.update(1L, request);
 
         assertThat(response.firstName()).isEqualTo("Novo");
@@ -220,10 +250,25 @@ class UserServiceTest {
         User securityUser = User.builder().id(2L).firstName("S").lastName("Sec").role(Role.SECURITY).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(securityUser));
 
-        UserUpdateRequest request = new UserUpdateRequest("Novo", "Ime", 99L, null);
+        UserUpdateRequest request = new UserUpdateRequest("Novo", "Ime", 99L, null, null);
         userService.update(2L, request);
 
         assertThat(securityUser.getApartment()).isNull();
+        verify(apartmentService, never()).findEntity(any());
+    }
+
+    @Test
+    void update_staffRole_updatesBuildingAndJobTitle() {
+        Building newBuilding = Building.builder().id(40L).name("Zgrada D").build();
+        User staffUser = User.builder().id(3L).firstName("S").lastName("Taff").role(Role.STAFF).build();
+        when(userRepository.findById(3L)).thenReturn(Optional.of(staffUser));
+        when(buildingService.findEntity(40L)).thenReturn(newBuilding);
+
+        UserUpdateRequest request = new UserUpdateRequest("Novo", "Ime", null, 40L, "Recepcija");
+        userService.update(3L, request);
+
+        assertThat(staffUser.getBuilding()).isEqualTo(newBuilding);
+        assertThat(staffUser.getJobTitle()).isEqualTo("Recepcija");
         verify(apartmentService, never()).findEntity(any());
     }
 }

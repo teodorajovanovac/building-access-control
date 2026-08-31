@@ -14,8 +14,6 @@ public interface EntryLogRepository extends JpaRepository<EntryLog, Long>, JpaSp
 
     Optional<EntryLog> findFirstByUserIdOrderByEntryTimeDesc(Long userId);
 
-    Optional<EntryLog> findFirstByStaffBadgeIdOrderByEntryTimeDesc(Long staffBadgeId);
-
     List<EntryLog> findByBuildingIdAndExitTimeIsNullOrderByEntryTimeAsc(Long buildingId);
 
     List<EntryLog> findByBuildingIdAndEntryTimeBetweenOrderByEntryTimeDesc(
@@ -38,8 +36,6 @@ public interface EntryLogRepository extends JpaRepository<EntryLog, Long>, JpaSp
     boolean existsByUserId(Long userId);
 
     boolean existsByProcessedById(Long userId);
-
-    boolean existsByStaffBadgeId(Long staffBadgeId);
 
     long countByBuildingIdAndExitTimeIsNull(Long buildingId);
 }

@@ -8,7 +8,6 @@ import com.buildingaccess.exception.ResourceNotFoundException;
 import com.buildingaccess.model.AccessDenial;
 import com.buildingaccess.model.EntryLog;
 import com.buildingaccess.model.GatePass;
-import com.buildingaccess.model.StaffBadge;
 import com.buildingaccess.model.User;
 import com.buildingaccess.model.enums.DenialReasonType;
 import com.buildingaccess.model.enums.GatePassStatus;
@@ -17,7 +16,6 @@ import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.repository.AccessDenialRepository;
 import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.repository.GatePassRepository;
-import com.buildingaccess.repository.StaffBadgeRepository;
 import com.buildingaccess.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,7 +38,6 @@ public class AccessProcessingService {
 
     private final GatePassRepository gatePassRepository;
     private final UserRepository userRepository;
-    private final StaffBadgeRepository staffBadgeRepository;
     private final EntryLogRepository entryLogRepository;
     private final AccessDenialRepository accessDenialRepository;
     private final GatePassService gatePassService;
@@ -54,18 +51,13 @@ public class AccessProcessingService {
             return processGatePass(gatePassOpt.get(), security);
         }
 
-        Optional<User> residentOpt = userRepository.findByBadgeCodeAndRole(code, Role.RESIDENT);
-        if (residentOpt.isPresent()) {
-            User resident = residentOpt.get();
-            Optional<EntryLog> last = entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(resident.getId());
-            return toggleEntry(PersonType.RESIDENT, fullName(resident), last, e -> e.setUser(resident), security, false);
-        }
-
-        Optional<StaffBadge> staffOpt = staffBadgeRepository.findByBadgeCodeAndActiveTrue(code);
-        if (staffOpt.isPresent()) {
-            StaffBadge staff = staffOpt.get();
-            Optional<EntryLog> last = entryLogRepository.findFirstByStaffBadgeIdOrderByEntryTimeDesc(staff.getId());
-            return toggleEntry(PersonType.STAFF, staff.getFullName(), last, e -> e.setStaffBadge(staff), security, false);
+        Optional<User> personOpt = userRepository.findByBadgeCode(code)
+                .filter(u -> u.getRole() == Role.RESIDENT || u.getRole() == Role.STAFF);
+        if (personOpt.isPresent()) {
+            User person = personOpt.get();
+            PersonType type = person.getRole() == Role.RESIDENT ? PersonType.RESIDENT : PersonType.STAFF;
+            Optional<EntryLog> last = entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(person.getId());
+            return toggleEntry(type, fullName(person), last, e -> e.setUser(person), security, false);
         }
 
         AccessDenial denial = AccessDenial.builder()
@@ -89,10 +81,10 @@ public class AccessProcessingService {
                         u.getId(), PersonType.RESIDENT, fullName(u), u.getApartment().getNumber(), null,
                         isCurrentlyInByUser(u.getId())));
 
-        Stream<PersonSearchResponse> staff = staffBadgeRepository.searchActiveStaffInBuilding(buildingId, query).stream()
-                .map(s -> new PersonSearchResponse(
-                        s.getId(), PersonType.STAFF, s.getFullName(), null, s.getJobTitle(),
-                        isCurrentlyInByStaff(s.getId())));
+        Stream<PersonSearchResponse> staff = userRepository.searchStaffInBuilding(buildingId, query).stream()
+                .map(u -> new PersonSearchResponse(
+                        u.getId(), PersonType.STAFF, fullName(u), null, u.getJobTitle(),
+                        isCurrentlyInByUser(u.getId())));
 
         return Stream.concat(residents, staff).toList();
     }
@@ -110,10 +102,11 @@ public class AccessProcessingService {
                 yield toggleEntry(PersonType.RESIDENT, fullName(resident), last, e -> e.setUser(resident), security, true);
             }
             case STAFF -> {
-                StaffBadge staff = staffBadgeRepository.findById(id)
+                User staff = userRepository.findById(id)
+                        .filter(u -> u.getRole() == Role.STAFF)
                         .orElseThrow(() -> new ResourceNotFoundException("Osoblje nije pronađeno: " + id));
-                Optional<EntryLog> last = entryLogRepository.findFirstByStaffBadgeIdOrderByEntryTimeDesc(staff.getId());
-                yield toggleEntry(PersonType.STAFF, staff.getFullName(), last, e -> e.setStaffBadge(staff), security, true);
+                Optional<EntryLog> last = entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(staff.getId());
+                yield toggleEntry(PersonType.STAFF, fullName(staff), last, e -> e.setUser(staff), security, true);
             }
             case GUEST -> throw new IllegalArgumentException("Ručni unos nije podržan za goste — koristi se kod/QR propusnice.");
         };
@@ -232,12 +225,6 @@ public class AccessProcessingService {
 
     private boolean isCurrentlyInByUser(Long userId) {
         return entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(userId)
-                .map(e -> e.getExitTime() == null)
-                .orElse(false);
-    }
-
-    private boolean isCurrentlyInByStaff(Long staffBadgeId) {
-        return entryLogRepository.findFirstByStaffBadgeIdOrderByEntryTimeDesc(staffBadgeId)
                 .map(e -> e.getExitTime() == null)
                 .orElse(false);
     }
