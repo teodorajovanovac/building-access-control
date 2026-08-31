@@ -98,7 +98,7 @@ export default function StatisticsPage() {
 
   return (
     <>
-      <PageHeader title="Statistika posećenosti" subtitle="Broj propusnica, ulazaka i odbijenih pokušaja po zgradi i periodu (SK18)" />
+      <PageHeader title="Statistika posećenosti" subtitle="Broj propusnica, ulazaka i odbijenih pokušaja po zgradi i periodu" />
       <ErrorAlert message={error} />
 
       <Paper sx={{ p: 2, mb: 3 }}>

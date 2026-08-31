@@ -7,6 +7,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  TablePagination,
   Button,
   IconButton,
   Tooltip,
@@ -48,6 +49,9 @@ export default function ApartmentsPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
   useEffect(() => {
     getBuildings()
       .then((data) => {
@@ -71,6 +75,7 @@ export default function ApartmentsPage() {
 
   useEffect(() => {
     load();
+    setPage(0);
     if (buildingId) setSearchParams({ buildingId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
@@ -165,7 +170,7 @@ export default function ApartmentsPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {apartments.map((a) => (
+              {apartments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((a) => (
                 <TableRow key={a.id} hover>
                   <TableCell>{a.number}</TableCell>
                   <TableCell>{a.floor}</TableCell>
@@ -194,6 +199,20 @@ export default function ApartmentsPage() {
             </TableBody>
           </Table>
         )}
+        <TablePagination
+          component="div"
+          count={apartments.length}
+          page={page}
+          onPageChange={(_, p) => setPage(p)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[10, 25, 50]}
+          labelRowsPerPage="Redova po strani"
+          labelDisplayedRows={({ from: f, to: t, count }) => `${f}–${t} od ${count}`}
+        />
       </Paper>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xs" fullWidth>

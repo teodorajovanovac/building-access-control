@@ -19,10 +19,12 @@ import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { scanCode, denyManually } from '../../api/access';
+import { getPublicGatePass } from '../../api/gatepasses';
 import { extractErrorMessage } from '../../api/client';
 import PageHeader from '../../components/common/PageHeader';
 import QrScannerPanel from '../../components/common/QrScannerPanel';
 import ErrorAlert from '../../components/common/ErrorAlert';
+import { GatePassStatusChip } from '../../components/common/StatusChip';
 
 const OUTCOME_META = {
   GUEST_ENTRY_APPROVED: { color: 'success', icon: <CheckCircleIcon fontSize="large" /> },
@@ -43,21 +45,36 @@ export default function ScanPage() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
 
+  // Propusnica gosta se prvo samo PROVERI (bez upisa) — tek klik na "Odobri" ili "Odbij"
+  // stvarno upisuje ishod, da se izbegne da ista propusnica ispadne i odobrena i odbijena.
+  const [preview, setPreview] = useState(null);
+
   const [denyOpen, setDenyOpen] = useState(false);
   const [denyReason, setDenyReason] = useState('');
   const [denyLoading, setDenyLoading] = useState(false);
 
-  const submitScan = async (value) => {
+  const checkCode = async (value) => {
     const trimmed = (value ?? code).trim();
     if (!trimmed) return;
     setError('');
     setResult(null);
+    setPreview(null);
     setLoading(true);
     try {
-      const res = await scanCode(trimmed);
-      setResult(res);
+      const pass = await getPublicGatePass(trimmed);
+      setPreview(pass);
     } catch (err) {
-      setError(extractErrorMessage(err));
+      if (err.response?.status === 404) {
+        // Nije kod propusnice — lični bedž stanara/osoblja se obrađuje automatski, bez potvrde.
+        try {
+          const res = await scanCode(trimmed);
+          setResult(res);
+        } catch (err2) {
+          setError(extractErrorMessage(err2));
+        }
+      } else {
+        setError(extractErrorMessage(err));
+      }
     } finally {
       setLoading(false);
     }
@@ -66,7 +83,21 @@ export default function ScanPage() {
   const handleCameraScan = (decodedText) => {
     setCode(decodedText);
     setCameraOpen(false);
-    submitScan(decodedText);
+    checkCode(decodedText);
+  };
+
+  const handleApprove = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await scanCode(code.trim());
+      setResult(res);
+      setPreview(null);
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeny = async () => {
@@ -76,6 +107,7 @@ export default function ScanPage() {
     try {
       const res = await denyManually({ code: code.trim() || null, personName: null, reasonNote: denyReason.trim() });
       setResult(res);
+      setPreview(null);
       setDenyOpen(false);
       setDenyReason('');
     } catch (err) {
@@ -103,7 +135,7 @@ export default function ScanPage() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') submitScan();
+                if (e.key === 'Enter') checkCode();
               }}
               autoFocus
               fullWidth
@@ -113,7 +145,7 @@ export default function ScanPage() {
               <Button
                 variant="contained"
                 startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
-                onClick={() => submitScan()}
+                onClick={() => checkCode()}
                 disabled={loading || !code.trim()}
                 fullWidth
               >
@@ -167,6 +199,41 @@ export default function ScanPage() {
         </Paper>
 
         <Box sx={{ flex: 1 }}>
+          {preview && (
+            <Paper sx={{ p: 3, borderLeft: '6px solid', borderColor: 'primary.main', mb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                Propusnica pronađena — nije još upisan ulazak
+              </Typography>
+              <Stack spacing={1}>
+                <Row label="Gost" value={preview.guestName} />
+                <Row label="Razlog" value={preview.reason} />
+                <Row label="Status" value={<GatePassStatusChip value={preview.status} />} />
+                <Row label="Važi do" value={formatTime(preview.validTo)} />
+              </Stack>
+              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<CheckCircleIcon />}
+                  onClick={handleApprove}
+                  disabled={loading}
+                  fullWidth
+                >
+                  Odobri ulazak
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<BlockIcon />}
+                  onClick={() => setDenyOpen(true)}
+                  disabled={loading}
+                  fullWidth
+                >
+                  Odbij
+                </Button>
+              </Stack>
+            </Paper>
+          )}
           {result && (
             <Paper
               sx={{
@@ -188,7 +255,7 @@ export default function ScanPage() {
               </Stack>
             </Paper>
           )}
-          {!result && (
+          {!result && !preview && (
             <Alert severity="info" variant="outlined">
               Rezultat provere koda će se prikazati ovde.
             </Alert>

@@ -6,6 +6,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  TablePagination,
   Button,
   IconButton,
   Tooltip,
@@ -51,6 +52,9 @@ export default function StaffPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
   useEffect(() => {
     getBuildings()
       .then((data) => {
@@ -76,6 +80,10 @@ export default function StaffPage() {
     () => users.filter((u) => u.role === 'STAFF' && (!buildingId || String(u.buildingId) === String(buildingId))),
     [users, buildingId]
   );
+
+  useEffect(() => {
+    setPage(0);
+  }, [buildingId]);
 
   const openCreate = () => {
     setEditing(null);
@@ -184,7 +192,7 @@ export default function StaffPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {staff.map((s) => (
+              {staff.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((s) => (
                 <TableRow key={s.id} hover>
                   <TableCell>
                     {s.firstName} {s.lastName}
@@ -221,6 +229,20 @@ export default function StaffPage() {
             </TableBody>
           </Table>
         )}
+        <TablePagination
+          component="div"
+          count={staff.length}
+          page={page}
+          onPageChange={(_, p) => setPage(p)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[10, 25, 50]}
+          labelRowsPerPage="Redova po strani"
+          labelDisplayedRows={({ from: f, to: t, count }) => `${f}–${t} od ${count}`}
+        />
       </Paper>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xs" fullWidth>

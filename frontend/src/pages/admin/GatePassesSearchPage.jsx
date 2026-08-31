@@ -79,7 +79,7 @@ export default function GatePassesSearchPage() {
 
   return (
     <>
-      <PageHeader title="Propusnice" subtitle="Pretraga, filtriranje, sortiranje i paginacija svih propusnica (SK17)" />
+      <PageHeader title="Propusnice" subtitle="Pretraga, filtriranje, sortiranje i paginacija svih propusnica" />
       <ErrorAlert message={error} />
 
       <Paper sx={{ p: 2, mb: 2 }}>

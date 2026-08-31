@@ -78,6 +78,7 @@ export default function RegisterPage() {
       alignItems="center"
       justifyContent="center"
       minHeight="100vh"
+      width="100%"
       sx={{ bgcolor: 'background.default', p: 2 }}
     >
       <Paper elevation={2} sx={{ p: 4, maxWidth: 460, width: '100%' }}>

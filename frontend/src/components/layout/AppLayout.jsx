@@ -79,7 +79,7 @@ export default function AppLayout() {
   const handleLogout = () => {
     setAnchorEl(null);
     logout();
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   const drawerContent = (

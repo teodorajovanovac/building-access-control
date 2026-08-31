@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Box,
   Paper,
@@ -24,7 +24,6 @@ const HOME_BY_ROLE = {
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,8 +35,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const user = await login(email, password);
-      const from = location.state?.from?.pathname;
-      navigate(from || HOME_BY_ROLE[user.role] || '/', { replace: true });
+      navigate(HOME_BY_ROLE[user.role] || '/', { replace: true });
     } catch (err) {
       setError(extractErrorMessage(err) || 'Pogrešan email ili lozinka!');
     } finally {
@@ -51,6 +49,7 @@ export default function LoginPage() {
       alignItems="center"
       justifyContent="center"
       minHeight="100vh"
+      width="100%"
       sx={{ bgcolor: 'background.default', p: 2 }}
     >
       <Paper elevation={2} sx={{ p: 4, maxWidth: 420, width: '100%' }}>

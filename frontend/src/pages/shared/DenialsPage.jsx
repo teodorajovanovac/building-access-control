@@ -171,7 +171,7 @@ export default function DenialsPage() {
 
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
         <Tab label="Danas" />
-        <Tab label="Pretraga (SK17)" />
+        <Tab label="Pretraga" />
       </Tabs>
 
       {tab === 1 && (

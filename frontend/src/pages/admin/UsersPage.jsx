@@ -6,6 +6,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  TablePagination,
   Button,
   IconButton,
   Tooltip,
@@ -34,6 +35,7 @@ import { RoleChip } from '../../components/common/StatusChip';
 const ROLE_OPTIONS = [
   { value: 'RESIDENT', label: 'Stanar' },
   { value: 'SECURITY', label: 'Obezbeđenje' },
+  { value: 'STAFF', label: 'Osoblje zgrade' },
   { value: 'ADMIN', label: 'Administrator' },
 ];
 
@@ -46,6 +48,7 @@ const EMPTY_FORM = {
   buildingIdForApartment: '',
   apartmentId: '',
   buildingId: '',
+  jobTitle: '',
 };
 
 export default function UsersPage() {
@@ -64,6 +67,9 @@ export default function UsersPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
   const load = useCallback(() => {
     setLoading(true);
     Promise.all([getUsers(), getBuildings()])
@@ -78,6 +84,10 @@ export default function UsersPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [users.length]);
 
   useEffect(() => {
     if (form.role === 'RESIDENT' && form.buildingIdForApartment) {
@@ -107,6 +117,7 @@ export default function UsersPage() {
       buildingIdForApartment: u.buildingId ? String(u.buildingId) : '',
       apartmentId: u.apartmentId ? String(u.apartmentId) : '',
       buildingId: u.buildingId ? String(u.buildingId) : '',
+      jobTitle: u.jobTitle || '',
     });
     setFormError('');
     setDialogOpen(true);
@@ -116,12 +127,14 @@ export default function UsersPage() {
     setSaving(true);
     setFormError('');
     try {
+      const isStaffOrSecurity = form.role === 'SECURITY' || form.role === 'STAFF';
       if (editing) {
         await updateUser(editing.id, {
           firstName: form.firstName,
           lastName: form.lastName,
           apartmentId: form.role === 'RESIDENT' && form.apartmentId ? Number(form.apartmentId) : null,
-          buildingId: form.role === 'SECURITY' && form.buildingId ? Number(form.buildingId) : null,
+          buildingId: isStaffOrSecurity && form.buildingId ? Number(form.buildingId) : null,
+          jobTitle: form.role === 'STAFF' ? form.jobTitle : null,
         });
       } else {
         await createUser({
@@ -131,7 +144,8 @@ export default function UsersPage() {
           password: form.password,
           role: form.role,
           apartmentId: form.role === 'RESIDENT' && form.apartmentId ? Number(form.apartmentId) : null,
-          buildingId: form.role === 'SECURITY' && form.buildingId ? Number(form.buildingId) : null,
+          buildingId: isStaffOrSecurity && form.buildingId ? Number(form.buildingId) : null,
+          jobTitle: form.role === 'STAFF' ? form.jobTitle : null,
         });
       }
       setDialogOpen(false);
@@ -185,7 +199,7 @@ export default function UsersPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((u) => (
+              {users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((u) => (
                 <TableRow key={u.id} hover>
                   <TableCell>
                     {u.firstName} {u.lastName}
@@ -224,6 +238,20 @@ export default function UsersPage() {
             </TableBody>
           </Table>
         )}
+        <TablePagination
+          component="div"
+          count={users.length}
+          page={page}
+          onPageChange={(_, p) => setPage(p)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[10, 25, 50]}
+          labelRowsPerPage="Redova po strani"
+          labelDisplayedRows={({ from: f, to: t, count }) => `${f}–${t} od ${count}`}
+        />
       </Paper>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
@@ -316,7 +344,7 @@ export default function UsersPage() {
               </>
             )}
 
-            {form.role === 'SECURITY' && (
+            {(form.role === 'SECURITY' || form.role === 'STAFF') && (
               <TextField
                 select
                 label="Zgrada (raspoređivanje)"
@@ -330,6 +358,15 @@ export default function UsersPage() {
                   </MenuItem>
                 ))}
               </TextField>
+            )}
+
+            {form.role === 'STAFF' && (
+              <TextField
+                label="Uloga / opis (npr. Održavanje)"
+                value={form.jobTitle}
+                onChange={(e) => setForm((f) => ({ ...f, jobTitle: e.target.value }))}
+                fullWidth
+              />
             )}
           </Stack>
         </DialogContent>
