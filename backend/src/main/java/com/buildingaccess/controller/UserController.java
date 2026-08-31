@@ -1,12 +1,15 @@
 package com.buildingaccess.controller;
 
+import com.buildingaccess.dto.common.PageResponse;
 import com.buildingaccess.dto.user.UserCreateRequest;
 import com.buildingaccess.dto.user.UserResponse;
 import com.buildingaccess.dto.user.UserUpdateRequest;
+import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -23,7 +27,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
-@Tag(name = "Users (Admin)", description = "SK15 Upravljanje korisnicima (CRUD)")
+@Tag(name = "Users (Admin)", description = "SK15 Upravljanje korisnicima (CRUD), SK16 osoblje")
 public class UserController {
 
     private final UserService userService;
@@ -31,6 +35,14 @@ public class UserController {
     @GetMapping
     public List<UserResponse> getAll() {
         return userService.getAll();
+    }
+
+    /** Paginirana pretraga (SK15/SK16) — role/buildingId opcioni filteri. */
+    @GetMapping("/search")
+    public PageResponse<UserResponse> search(@RequestParam(required = false) Role role,
+                                              @RequestParam(required = false) Long buildingId,
+                                              Pageable pageable) {
+        return PageResponse.of(userService.search(role, buildingId, pageable));
     }
 
     @GetMapping("/{id}")

@@ -10,6 +10,8 @@ import com.buildingaccess.model.Building;
 import com.buildingaccess.repository.ApartmentRepository;
 import com.buildingaccess.repository.GatePassRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,8 +25,14 @@ public class ApartmentService {
     private final GatePassRepository gatePassRepository;
     private final BuildingService buildingService;
 
+    /** Puna (nepaginirana) lista — koristi je forma za registraciju stanara (SK2), gde je potreban ceo izbor. */
     public List<ApartmentResponse> getByBuilding(Long buildingId) {
         return apartmentRepository.findByBuildingId(buildingId).stream().map(ApartmentMapper::toResponse).toList();
+    }
+
+    /** Paginirana lista za admin CRUD prikaz (SK14). */
+    public Page<ApartmentResponse> search(Long buildingId, Pageable pageable) {
+        return apartmentRepository.findByBuildingId(buildingId, pageable).map(ApartmentMapper::toResponse);
     }
 
     public ApartmentResponse getById(Long id) {

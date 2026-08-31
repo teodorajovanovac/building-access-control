@@ -17,6 +17,8 @@ import com.buildingaccess.repository.GatePassRepository;
 import com.buildingaccess.repository.UserRepository;
 import com.buildingaccess.util.CodeGeneratorUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,19 @@ public class UserService {
 
     public List<UserResponse> getAll() {
         return userRepository.findAll().stream().map(UserMapper::toResponse).toList();
+    }
+
+    /** Paginirana pretraga za admin tabele (SK15, SK16 — Korisnici i Osoblje). */
+    public Page<UserResponse> search(Role role, Long buildingId, Pageable pageable) {
+        Page<User> page;
+        if (role != null && buildingId != null) {
+            page = userRepository.findByRoleAndBuildingId(role, buildingId, pageable);
+        } else if (role != null) {
+            page = userRepository.findByRole(role, pageable);
+        } else {
+            page = userRepository.findAll(pageable);
+        }
+        return page.map(UserMapper::toResponse);
     }
 
     public UserResponse getById(Long id) {

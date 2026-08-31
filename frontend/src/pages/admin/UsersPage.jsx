@@ -22,7 +22,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { createUser, deleteUser, getUsers, updateUser } from '../../api/users';
+import { createUser, deleteUser, searchUsers, updateUser } from '../../api/users';
 import { getBuildings } from '../../api/buildings';
 import { getApartmentsByBuilding } from '../../api/apartments';
 import { extractErrorMessage } from '../../api/client';
@@ -52,7 +52,7 @@ const EMPTY_FORM = {
 };
 
 export default function UsersPage() {
-  const [users, setUsers] = useState([]);
+  const [result, setResult] = useState({ content: [], totalElements: 0 });
   const [buildings, setBuildings] = useState([]);
   const [apartmentOptions, setApartmentOptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,22 +72,21 @@ export default function UsersPage() {
 
   const load = useCallback(() => {
     setLoading(true);
-    Promise.all([getUsers(), getBuildings()])
-      .then(([u, b]) => {
-        setUsers(u);
-        setBuildings(b);
-      })
+    searchUsers({ page, size: rowsPerPage, sort: 'lastName,asc' })
+      .then(setResult)
       .catch((err) => setError(extractErrorMessage(err)))
       .finally(() => setLoading(false));
-  }, []);
+  }, [page, rowsPerPage]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   useEffect(() => {
-    setPage(0);
-  }, [users.length]);
+    getBuildings()
+      .then(setBuildings)
+      .catch((err) => setError(extractErrorMessage(err)));
+  }, []);
 
   useEffect(() => {
     if (form.role === 'RESIDENT' && form.buildingIdForApartment) {
@@ -199,7 +198,7 @@ export default function UsersPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((u) => (
+              {result.content.map((u) => (
                 <TableRow key={u.id} hover>
                   <TableCell>
                     {u.firstName} {u.lastName}
@@ -228,7 +227,7 @@ export default function UsersPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {users.length === 0 && (
+              {result.content.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                     Nema korisnika.
@@ -240,7 +239,7 @@ export default function UsersPage() {
         )}
         <TablePagination
           component="div"
-          count={users.length}
+          count={result.totalElements}
           page={page}
           onPageChange={(_, p) => setPage(p)}
           rowsPerPage={rowsPerPage}

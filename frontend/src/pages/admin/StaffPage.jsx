@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Paper,
   Table,
@@ -24,7 +24,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
-import { createUser, deleteUser, getUsers, updateUser } from '../../api/users';
+import { createUser, deleteUser, searchUsers, updateUser } from '../../api/users';
 import { getBuildings } from '../../api/buildings';
 import { extractErrorMessage } from '../../api/client';
 import LoadingBox from '../../components/common/LoadingBox';
@@ -38,7 +38,7 @@ const EMPTY_FORM = { firstName: '', lastName: '', email: '', password: '', jobTi
 export default function StaffPage() {
   const [buildings, setBuildings] = useState([]);
   const [buildingId, setBuildingId] = useState('');
-  const [users, setUsers] = useState([]);
+  const [result, setResult] = useState({ content: [], totalElements: 0 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -65,21 +65,17 @@ export default function StaffPage() {
   }, []);
 
   const load = useCallback(() => {
+    if (!buildingId) return;
     setLoading(true);
-    getUsers()
-      .then(setUsers)
+    searchUsers({ role: 'STAFF', buildingId, page, size: rowsPerPage, sort: 'lastName,asc' })
+      .then(setResult)
       .catch((err) => setError(extractErrorMessage(err)))
       .finally(() => setLoading(false));
-  }, []);
+  }, [buildingId, page, rowsPerPage]);
 
   useEffect(() => {
     load();
   }, [load]);
-
-  const staff = useMemo(
-    () => users.filter((u) => u.role === 'STAFF' && (!buildingId || String(u.buildingId) === String(buildingId))),
-    [users, buildingId]
-  );
 
   useEffect(() => {
     setPage(0);
@@ -192,7 +188,7 @@ export default function StaffPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {staff.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((s) => (
+              {result.content.map((s) => (
                 <TableRow key={s.id} hover>
                   <TableCell>
                     {s.firstName} {s.lastName}
@@ -219,7 +215,7 @@ export default function StaffPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {staff.length === 0 && (
+              {result.content.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                     Nema osoblja u odabranoj zgradi.
@@ -231,7 +227,7 @@ export default function StaffPage() {
         )}
         <TablePagination
           component="div"
-          count={staff.length}
+          count={result.totalElements}
           page={page}
           onPageChange={(_, p) => setPage(p)}
           rowsPerPage={rowsPerPage}

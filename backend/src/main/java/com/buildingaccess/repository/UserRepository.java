@@ -2,6 +2,8 @@ package com.buildingaccess.repository;
 
 import com.buildingaccess.model.User;
 import com.buildingaccess.model.enums.Role;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,6 +30,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByRoleAndBuildingId(Role role, Long buildingId);
 
     List<User> findByRoleAndBuildingId(Role role, Long buildingId);
+
+    Page<User> findByRole(Role role, Pageable pageable);
+
+    Page<User> findByRoleAndBuildingId(Role role, Long buildingId, Pageable pageable);
 
     List<User> findByApartmentId(Long apartmentId);
 

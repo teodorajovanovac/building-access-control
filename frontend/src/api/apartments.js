@@ -5,6 +5,9 @@ const BASE = '/api/admin/apartments';
 export const getApartmentsByBuilding = (buildingId) =>
   apiClient.get(BASE, { params: { buildingId } }).then((r) => r.data);
 
+export const searchApartments = ({ buildingId, page, size, sort }) =>
+  apiClient.get(`${BASE}/search`, { params: { buildingId, page, size, sort } }).then((r) => r.data);
+
 /** Bez prijave — koristi se na formi registracije (SK2), pre nego što stanar ima token. */
 export const getPublicApartments = (buildingId) =>
   apiClient.get(`/api/public/buildings/${buildingId}/apartments`).then((r) => r.data);

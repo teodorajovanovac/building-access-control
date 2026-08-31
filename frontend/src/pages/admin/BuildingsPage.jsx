@@ -7,7 +7,6 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  TablePagination,
   Button,
   IconButton,
   Tooltip,
@@ -46,9 +45,6 @@ export default function BuildingsPage() {
 
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
-
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -134,7 +130,7 @@ export default function BuildingsPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {buildings.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((b) => (
+              {buildings.map((b) => (
                 <TableRow key={b.id} hover>
                   <TableCell>{b.name}</TableCell>
                   <TableCell>{b.address}</TableCell>
@@ -168,20 +164,6 @@ export default function BuildingsPage() {
             </TableBody>
           </Table>
         )}
-        <TablePagination
-          component="div"
-          count={buildings.length}
-          page={page}
-          onPageChange={(_, p) => setPage(p)}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
-          rowsPerPageOptions={[10, 25, 50]}
-          labelRowsPerPage="Redova po strani"
-          labelDisplayedRows={({ from: f, to: t, count }) => `${f}–${t} od ${count}`}
-        />
       </Paper>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xs" fullWidth>

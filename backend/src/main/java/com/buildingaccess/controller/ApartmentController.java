@@ -2,10 +2,12 @@ package com.buildingaccess.controller;
 
 import com.buildingaccess.dto.apartment.ApartmentRequest;
 import com.buildingaccess.dto.apartment.ApartmentResponse;
+import com.buildingaccess.dto.common.PageResponse;
 import com.buildingaccess.service.ApartmentService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,9 +30,16 @@ public class ApartmentController {
 
     private final ApartmentService apartmentService;
 
+    /** Puna lista — koristi je npr. dropdown za dodelu stana korisniku. */
     @GetMapping
     public List<ApartmentResponse> getByBuilding(@RequestParam Long buildingId) {
         return apartmentService.getByBuilding(buildingId);
+    }
+
+    /** Paginirana pretraga za admin tabelu (SK14). */
+    @GetMapping("/search")
+    public PageResponse<ApartmentResponse> search(@RequestParam Long buildingId, Pageable pageable) {
+        return PageResponse.of(apartmentService.search(buildingId, pageable));
     }
 
     @GetMapping("/{id}")

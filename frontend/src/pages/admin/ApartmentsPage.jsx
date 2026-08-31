@@ -24,7 +24,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { createApartment, deleteApartment, getApartmentsByBuilding, updateApartment } from '../../api/apartments';
+import { createApartment, deleteApartment, searchApartments, updateApartment } from '../../api/apartments';
 import { getBuildings } from '../../api/buildings';
 import { extractErrorMessage } from '../../api/client';
 import LoadingBox from '../../components/common/LoadingBox';
@@ -36,7 +36,7 @@ export default function ApartmentsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [buildings, setBuildings] = useState([]);
   const [buildingId, setBuildingId] = useState(searchParams.get('buildingId') || '');
-  const [apartments, setApartments] = useState([]);
+  const [result, setResult] = useState({ content: [], totalElements: 0 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -67,18 +67,21 @@ export default function ApartmentsPage() {
   const load = useCallback(() => {
     if (!buildingId) return;
     setLoading(true);
-    getApartmentsByBuilding(buildingId)
-      .then(setApartments)
+    searchApartments({ buildingId, page, size: rowsPerPage, sort: 'number,asc' })
+      .then(setResult)
       .catch((err) => setError(extractErrorMessage(err)))
       .finally(() => setLoading(false));
-  }, [buildingId]);
+  }, [buildingId, page, rowsPerPage]);
 
   useEffect(() => {
     load();
-    setPage(0);
     if (buildingId) setSearchParams({ buildingId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [buildingId]);
 
   const openCreate = () => {
     setEditing(null);
@@ -170,7 +173,7 @@ export default function ApartmentsPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {apartments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((a) => (
+              {result.content.map((a) => (
                 <TableRow key={a.id} hover>
                   <TableCell>{a.number}</TableCell>
                   <TableCell>{a.floor}</TableCell>
@@ -189,7 +192,7 @@ export default function ApartmentsPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {apartments.length === 0 && (
+              {result.content.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                     Nema stanova u odabranoj zgradi.
@@ -201,7 +204,7 @@ export default function ApartmentsPage() {
         )}
         <TablePagination
           component="div"
-          count={apartments.length}
+          count={result.totalElements}
           page={page}
           onPageChange={(_, p) => setPage(p)}
           rowsPerPage={rowsPerPage}
