@@ -2,7 +2,6 @@ package com.buildingaccess.model;
 
 import com.buildingaccess.model.enums.GatePassStatus;
 import com.buildingaccess.model.enums.GatePassType;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -78,12 +77,12 @@ public class GatePass {
     private Apartment apartment;
 
     @Builder.Default
-    @OneToMany(mappedBy = "gatePass", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "gatePass")
     @OrderBy("entryTime DESC")
     private List<EntryLog> entryLogs = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "gatePass", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "gatePass")
     @OrderBy("changedAt DESC")
     private List<PassStatusHistory> statusHistory = new ArrayList<>();
 }

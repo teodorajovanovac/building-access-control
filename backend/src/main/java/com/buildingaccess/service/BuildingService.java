@@ -9,6 +9,7 @@ import com.buildingaccess.model.Apartment;
 import com.buildingaccess.model.Building;
 import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.repository.AccessDenialRepository;
+import com.buildingaccess.repository.ApartmentRepository;
 import com.buildingaccess.repository.BuildingRepository;
 import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.repository.GatePassRepository;
@@ -24,6 +25,7 @@ import java.util.List;
 public class BuildingService {
 
     private final BuildingRepository buildingRepository;
+    private final ApartmentRepository apartmentRepository;
     private final UserRepository userRepository;
     private final GatePassRepository gatePassRepository;
     private final EntryLogRepository entryLogRepository;
@@ -78,6 +80,10 @@ public class BuildingService {
             throw new InvalidStatusException("Zgrada ima evidenciju ulazaka ili odbijenih pokušaja — ne može se obrisati.");
         }
 
+        // Stan ne postoji bez zgrade (apartments.building_id je NOT NULL) — pošto veza više nije
+        // kaskadna na nivou JPA (v. konceptualni model: obična asocijacija, ne kompozicija),
+        // prazne stanove eksplicitno brišemo ovde pre brisanja zgrade.
+        apartmentRepository.deleteAll(building.getApartments());
         buildingRepository.delete(building);
     }
 

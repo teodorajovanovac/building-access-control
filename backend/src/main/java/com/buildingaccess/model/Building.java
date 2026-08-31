@@ -1,6 +1,5 @@
 package com.buildingaccess.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,6 +33,6 @@ public class Building {
     private String address;
 
     @Builder.Default
-    @OneToMany(mappedBy = "building", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "building")
     private List<Apartment> apartments = new ArrayList<>();
 }

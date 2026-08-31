@@ -7,6 +7,7 @@ import com.buildingaccess.model.Building;
 import com.buildingaccess.model.User;
 import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.repository.AccessDenialRepository;
+import com.buildingaccess.repository.ApartmentRepository;
 import com.buildingaccess.repository.BuildingRepository;
 import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.repository.GatePassRepository;
@@ -34,6 +35,8 @@ class BuildingServiceTest {
     @Mock
     private BuildingRepository buildingRepository;
     @Mock
+    private ApartmentRepository apartmentRepository;
+    @Mock
     private UserRepository userRepository;
     @Mock
     private GatePassRepository gatePassRepository;
@@ -46,8 +49,8 @@ class BuildingServiceTest {
 
     @BeforeEach
     void setUp() {
-        buildingService = new BuildingService(buildingRepository, userRepository, gatePassRepository,
-                entryLogRepository, accessDenialRepository);
+        buildingService = new BuildingService(buildingRepository, apartmentRepository, userRepository,
+                gatePassRepository, entryLogRepository, accessDenialRepository);
     }
 
     private Building buildingWith(List<Apartment> apartments) {
