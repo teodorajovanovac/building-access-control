@@ -9,6 +9,7 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +52,13 @@ public class EntryLogService {
                                           String text, Pageable pageable) {
         Specification<EntryLog> spec = buildSpecification(buildingId, personType, from, to, text);
         return entryLogRepository.findAll(spec, pageable).map(EntryLogMapper::toResponse);
+    }
+
+    /** Isti filteri kao search, ali bez paginacije — za CSV izvoz kompletnog rezultata pretrage. */
+    public List<EntryLogResponse> export(Long buildingId, String personType, LocalDateTime from, LocalDateTime to,
+                                          String text, Sort sort) {
+        Specification<EntryLog> spec = buildSpecification(buildingId, personType, from, to, text);
+        return entryLogRepository.findAll(spec, sort).stream().map(EntryLogMapper::toResponse).toList();
     }
 
     private Specification<EntryLog> buildSpecification(Long buildingId, String personType, LocalDateTime from,

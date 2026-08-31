@@ -17,9 +17,11 @@ import {
   Chip,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { getTodayEntryLogs, getCurrentlyPresent, searchEntryLogs } from '../../api/entrylogs';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { getTodayEntryLogs, getCurrentlyPresent, searchEntryLogs, exportEntryLogs } from '../../api/entrylogs';
 import { getBuildings } from '../../api/buildings';
 import { extractErrorMessage } from '../../api/client';
+import { downloadBlob } from '../../utils/download';
 import { useAuth } from '../../context/AuthContext';
 import LoadingBox from '../../components/common/LoadingBox';
 import ErrorAlert from '../../components/common/ErrorAlert';
@@ -105,6 +107,7 @@ export default function EntryLogsPage() {
   const [searchResult, setSearchResult] = useState({ content: [], totalElements: 0 });
 
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -159,6 +162,26 @@ export default function EntryLogsPage() {
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveBuildingId, isAdmin, buildingId, personType, from, to, text, page, size, sort]);
+
+  const handleExport = async () => {
+    if (isAdmin && !buildingId) return;
+    setExporting(true);
+    setError('');
+    try {
+      const blob = await exportEntryLogs({
+        buildingId: effectiveBuildingId,
+        personType: personType || undefined,
+        from: from || undefined,
+        to: to || undefined,
+        text: text || undefined,
+      });
+      downloadBlob(blob, 'evidencija-ulazaka.csv');
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useEffect(() => {
     setError('');
@@ -260,6 +283,14 @@ export default function EntryLogsPage() {
               }}
             >
               Pretraži
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<FileDownloadIcon />}
+              onClick={handleExport}
+              disabled={exporting}
+            >
+              Izvezi u Excel
             </Button>
           </Stack>
         </Paper>

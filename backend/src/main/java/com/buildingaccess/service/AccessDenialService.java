@@ -9,6 +9,7 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,13 @@ public class AccessDenialService {
                                               String text, Pageable pageable) {
         Specification<AccessDenial> spec = buildSpecification(buildingId, reasonType, from, to, text);
         return accessDenialRepository.findAll(spec, pageable).map(AccessDenialMapper::toResponse);
+    }
+
+    /** Isti filteri kao search, ali bez paginacije — za CSV izvoz kompletnog rezultata pretrage. */
+    public List<AccessDenialResponse> export(Long buildingId, String reasonType, LocalDateTime from, LocalDateTime to,
+                                              String text, Sort sort) {
+        Specification<AccessDenial> spec = buildSpecification(buildingId, reasonType, from, to, text);
+        return accessDenialRepository.findAll(spec, sort).stream().map(AccessDenialMapper::toResponse).toList();
     }
 
     private Specification<AccessDenial> buildSpecification(Long buildingId, String reasonType, LocalDateTime from,

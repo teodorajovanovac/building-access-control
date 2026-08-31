@@ -13,9 +13,11 @@ import {
   Button,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { searchGatePasses } from '../../api/gatepasses';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { searchGatePasses, exportGatePasses } from '../../api/gatepasses';
 import { getBuildings } from '../../api/buildings';
 import { extractErrorMessage } from '../../api/client';
+import { downloadBlob } from '../../utils/download';
 import LoadingBox from '../../components/common/LoadingBox';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import PageHeader from '../../components/common/PageHeader';
@@ -46,6 +48,7 @@ export default function GatePassesSearchPage() {
   const [sort, setSort] = useState('createdAt,desc');
   const [result, setResult] = useState({ content: [], totalElements: 0 });
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -72,6 +75,25 @@ export default function GatePassesSearchPage() {
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buildingId, status, from, to, text, page, size, sort]);
+
+  const handleExport = async () => {
+    setExporting(true);
+    setError('');
+    try {
+      const blob = await exportGatePasses({
+        buildingId: buildingId || undefined,
+        status: status || undefined,
+        from: from || undefined,
+        to: to || undefined,
+        text: text || undefined,
+      });
+      downloadBlob(blob, 'propusnice.csv');
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useEffect(() => {
     load();
@@ -164,6 +186,14 @@ export default function GatePassesSearchPage() {
             }}
           >
             Pretraži
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExport}
+            disabled={exporting}
+          >
+            Izvezi u Excel
           </Button>
         </Stack>
       </Paper>

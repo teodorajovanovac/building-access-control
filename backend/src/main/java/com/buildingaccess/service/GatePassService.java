@@ -20,6 +20,7 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -63,7 +64,20 @@ public class GatePassService {
     /** SK17 — pretraga/filtriranje/sortiranje/paginacija (admin). */
     public Page<GatePassResponse> search(Long buildingId, Long apartmentId, GatePassStatus status,
                                           LocalDateTime from, LocalDateTime to, String text, Pageable pageable) {
-        Specification<GatePass> spec = (root, query, cb) -> {
+        Specification<GatePass> spec = buildSpecification(buildingId, apartmentId, status, from, to, text);
+        return gatePassRepository.findAll(spec, pageable).map(GatePassMapper::toResponse);
+    }
+
+    /** Isti filteri kao search, ali bez paginacije — za CSV izvoz kompletnog rezultata pretrage. */
+    public List<GatePassResponse> export(Long buildingId, Long apartmentId, GatePassStatus status,
+                                          LocalDateTime from, LocalDateTime to, String text, Sort sort) {
+        Specification<GatePass> spec = buildSpecification(buildingId, apartmentId, status, from, to, text);
+        return gatePassRepository.findAll(spec, sort).stream().map(GatePassMapper::toResponse).toList();
+    }
+
+    private Specification<GatePass> buildSpecification(Long buildingId, Long apartmentId, GatePassStatus status,
+                                                         LocalDateTime from, LocalDateTime to, String text) {
+        return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (buildingId != null) {
                 predicates.add(cb.equal(root.get("apartment").get("building").get("id"), buildingId));
@@ -89,7 +103,6 @@ public class GatePassService {
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-        return gatePassRepository.findAll(spec, pageable).map(GatePassMapper::toResponse);
     }
 
     GatePass findEntity(Long id) {

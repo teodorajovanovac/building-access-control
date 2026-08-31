@@ -23,3 +23,6 @@ export const searchGatePasses = (params) =>
 
 export const getPublicGatePass = (code) =>
   apiClient.get(`/api/public/gatepass/${encodeURIComponent(code)}`).then((r) => r.data);
+
+export const exportGatePasses = (params) =>
+  apiClient.get(`${ADMIN_BASE}/export`, { params, responseType: 'blob' }).then((r) => r.data);

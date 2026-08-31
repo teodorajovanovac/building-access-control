@@ -11,3 +11,6 @@ export const searchEntryLogs = (params) =>
 
 export const getMyApartmentEntryLogs = () =>
   apiClient.get('/api/resident/entrylogs').then((r) => r.data);
+
+export const exportEntryLogs = (params) =>
+  apiClient.get('/api/query/entrylogs/export', { params, responseType: 'blob' }).then((r) => r.data);

@@ -5,3 +5,6 @@ export const getTodayDenials = (buildingId) =>
 
 export const searchDenials = (params) =>
   apiClient.get('/api/query/denials/search', { params }).then((r) => r.data);
+
+export const exportDenials = (params) =>
+  apiClient.get('/api/query/denials/export', { params, responseType: 'blob' }).then((r) => r.data);
