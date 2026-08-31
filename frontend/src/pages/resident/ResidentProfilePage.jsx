@@ -10,10 +10,14 @@ import PageHeader from '../../components/common/PageHeader';
 function Field({ label, value }) {
   return (
     <Stack spacing={0.25}>
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="caption" sx={{
+        color: "text.secondary"
+      }}>
         {label}
       </Typography>
-      <Typography variant="body1" fontWeight={600}>
+      <Typography variant="body1" sx={{
+        fontWeight: 600
+      }}>
         {value || '—'}
       </Typography>
     </Stack>

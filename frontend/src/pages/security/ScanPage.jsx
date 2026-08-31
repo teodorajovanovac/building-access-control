@@ -173,7 +173,9 @@ export default function ScanPage() {
             </Button>
             <Collapse in={denyOpen}>
               <Stack spacing={1.5} sx={{ pt: 1 }}>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" sx={{
+                  color: "text.secondary"
+                }}>
                   Odbijanje i pored eventualno validnog koda — razlog je obavezan.
                 </Typography>
                 <TextField
@@ -242,7 +244,13 @@ export default function ScanPage() {
                 borderColor: `${meta.color}.main`,
               }}
             >
-              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
+              <Stack
+                direction="row"
+                spacing={2}
+                sx={{
+                  alignItems: "center",
+                  mb: 1
+                }}>
                 <Box sx={{ color: `${meta.color}.main` }}>{meta.icon}</Box>
                 <Typography variant="h6">{result.message}</Typography>
               </Stack>
@@ -269,10 +277,17 @@ export default function ScanPage() {
 function Row({ label, value }) {
   return (
     <Stack direction="row" spacing={1}>
-      <Typography variant="body2" color="text.secondary" sx={{ minWidth: 130 }}>
+      <Typography
+        variant="body2"
+        sx={{
+          color: "text.secondary",
+          minWidth: 130
+        }}>
         {label}
       </Typography>
-      <Typography variant="body2" fontWeight={600}>
+      <Typography variant="body2" sx={{
+        fontWeight: 600
+      }}>
         {value}
       </Typography>
     </Stack>

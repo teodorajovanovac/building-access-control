@@ -120,8 +120,12 @@ export default function GatePassDetailPage() {
             >
               <QrCodeImage base64={pass.qrCodeBase64} size={200} />
               <Stack spacing={1.5} sx={{ width: '100%' }}>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h6" fontFamily="monospace">
+                <Stack direction="row" spacing={1} sx={{
+                  alignItems: "center"
+                }}>
+                  <Typography variant="h6" sx={{
+                    fontFamily: "monospace"
+                  }}>
                     {pass.code}
                   </Typography>
                   <GatePassStatusChip value={pass.status} />
@@ -135,7 +139,9 @@ export default function GatePassDetailPage() {
                 <Row label="Važi do" value={formatDateTime(pass.validTo)} />
                 <Row label="Iskorišćeno ulazaka" value={`${pass.usedEntries} / ${pass.maxEntries}`} />
                 <Divider />
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" sx={{
+                  color: "text.secondary"
+                }}>
                   Javni link za deljenje gostu
                 </Typography>
                 <Stack direction="row" spacing={1}>
@@ -151,7 +157,12 @@ export default function GatePassDetailPage() {
           </Paper>
 
           <Paper sx={{ p: 3 }}>
-            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                fontWeight: 700,
+                mb: 2
+              }}>
               Istorija statusa
             </Typography>
             <Table size="small">
@@ -207,10 +218,17 @@ function Row({ label, value }) {
   if (!value) return null;
   return (
     <Stack direction="row" spacing={1}>
-      <Typography variant="body2" color="text.secondary" sx={{ minWidth: 140 }}>
+      <Typography
+        variant="body2"
+        sx={{
+          color: "text.secondary",
+          minWidth: 140
+        }}>
         {label}
       </Typography>
-      <Typography variant="body2" fontWeight={600}>
+      <Typography variant="body2" sx={{
+        fontWeight: 600
+      }}>
         {value}
       </Typography>
     </Stack>

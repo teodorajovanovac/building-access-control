@@ -83,7 +83,14 @@ export default function GatePassesSearchPage() {
       <ErrorAlert message={error} />
 
       <Paper sx={{ p: 2, mb: 2 }}>
-        <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap alignItems="center">
+        <Stack
+          direction="row"
+          spacing={2}
+          useFlexGap
+          sx={{
+            flexWrap: "wrap",
+            alignItems: "center"
+          }}>
           <TextField
             select
             label="Zgrada"

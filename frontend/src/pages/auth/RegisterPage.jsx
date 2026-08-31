@@ -74,20 +74,34 @@ export default function RegisterPage() {
 
   return (
     <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      minHeight="100vh"
-      width="100%"
-      sx={{ bgcolor: 'background.default', p: 2 }}
-    >
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        width: "100%",
+        bgcolor: 'background.default',
+        p: 2
+      }}>
       <Paper elevation={2} sx={{ p: 4, maxWidth: 460, width: '100%' }}>
-        <Stack alignItems="center" spacing={1} sx={{ mb: 3 }}>
+        <Stack
+          spacing={1}
+          sx={{
+            alignItems: "center",
+            mb: 3
+          }}>
           <HowToRegIcon color="primary" sx={{ fontSize: 40 }} />
-          <Typography variant="h5" fontWeight={700}>
+          <Typography variant="h5" sx={{
+            fontWeight: 700
+          }}>
             Registracija stanara
           </Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center">
+          <Typography
+            variant="body2"
+            sx={{
+              color: "text.secondary",
+              textAlign: "center"
+            }}>
             Nakon registracije automatski dobijate lični bedž kod i QR kod za ulazak.
           </Typography>
         </Stack>

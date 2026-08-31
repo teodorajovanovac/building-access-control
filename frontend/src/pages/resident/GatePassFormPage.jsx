@@ -184,7 +184,9 @@ export default function GatePassFormPage() {
                 </TextField>
               )}
             </Stack>
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
+            <Stack direction="row" spacing={2} sx={{
+              justifyContent: "flex-end"
+            }}>
               <Button onClick={() => navigate(-1)} disabled={saving}>
                 Otkaži
               </Button>

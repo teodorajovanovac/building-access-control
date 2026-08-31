@@ -319,13 +319,27 @@ export default function StaffPage() {
       <Dialog open={Boolean(badgeView)} onClose={() => setBadgeView(null)} maxWidth="xs" fullWidth>
         <DialogTitle>Bedž kod za ulazak</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} alignItems="center" sx={{ py: 1 }}>
+          <Stack
+            spacing={2}
+            sx={{
+              alignItems: "center",
+              py: 1
+            }}>
             <QrCodeImage base64={badgeView?.qrCodeBase64} size={200} />
-            <Box textAlign="center">
-              <Box fontWeight={700} fontFamily="monospace" fontSize={18}>
+            <Box sx={{
+              textAlign: "center"
+            }}>
+              <Box
+                sx={{
+                  fontWeight: 700,
+                  fontFamily: "monospace",
+                  fontSize: 18
+                }}>
                 {badgeView?.badgeCode}
               </Box>
-              <Box color="text.secondary">
+              <Box sx={{
+                color: "text.secondary"
+              }}>
                 {badgeView?.firstName} {badgeView?.lastName}
               </Box>
             </Box>

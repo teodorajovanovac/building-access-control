@@ -45,20 +45,31 @@ export default function LoginPage() {
 
   return (
     <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      minHeight="100vh"
-      width="100%"
-      sx={{ bgcolor: 'background.default', p: 2 }}
-    >
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        width: "100%",
+        bgcolor: 'background.default',
+        p: 2
+      }}>
       <Paper elevation={2} sx={{ p: 4, maxWidth: 420, width: '100%' }}>
-        <Stack alignItems="center" spacing={1} sx={{ mb: 3 }}>
+        <Stack
+          spacing={1}
+          sx={{
+            alignItems: "center",
+            mb: 3
+          }}>
           <SecurityIcon color="primary" sx={{ fontSize: 40 }} />
-          <Typography variant="h5" fontWeight={700}>
+          <Typography variant="h5" sx={{
+            fontWeight: 700
+          }}>
             Kontrola pristupa zgradi
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={{
+            color: "text.secondary"
+          }}>
             Prijavite se na svoj nalog
           </Typography>
         </Stack>

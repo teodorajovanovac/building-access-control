@@ -86,7 +86,9 @@ export default function AppLayout() {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Toolbar>
         <SecurityIcon color="primary" sx={{ mr: 1 }} />
-        <Typography variant="subtitle1" fontWeight={700} noWrap>
+        <Typography variant="subtitle1" noWrap sx={{
+          fontWeight: 700
+        }}>
           Kontrola pristupa
         </Typography>
       </Toolbar>
@@ -143,7 +145,12 @@ export default function AppLayout() {
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "text.secondary",
+                display: { xs: 'none', sm: 'block' }
+              }}>
               {user?.firstName} {user?.lastName}
             </Typography>
             <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>

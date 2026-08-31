@@ -38,7 +38,9 @@ export default function QrScannerPanel({ onScan }) {
   return (
     <Box>
       <div id={ELEMENT_ID} />
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="caption" sx={{
+        color: "text.secondary"
+      }}>
         Ako kamera ne radi na ovom uređaju, unesite kod ručno u polje iznad.
       </Typography>
     </Box>

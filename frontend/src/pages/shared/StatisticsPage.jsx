@@ -35,10 +35,17 @@ function isoDate(d) {
 function StatCard({ label, value, color = 'primary.main' }) {
   return (
     <Paper sx={{ p: 2.5, flex: '1 1 200px', minWidth: 180 }}>
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" sx={{
+        color: "text.secondary"
+      }}>
         {label}
       </Typography>
-      <Typography variant="h4" fontWeight={700} sx={{ color }}>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 700,
+          color
+        }}>
         {value}
       </Typography>
     </Paper>
@@ -102,7 +109,14 @@ export default function StatisticsPage() {
       <ErrorAlert message={error} />
 
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap alignItems="center">
+        <Stack
+          direction="row"
+          spacing={2}
+          useFlexGap
+          sx={{
+            flexWrap: "wrap",
+            alignItems: "center"
+          }}>
           {isAdmin ? (
             <TextField
               select
@@ -157,7 +171,12 @@ export default function StatisticsPage() {
           </Box>
 
           <Paper sx={{ p: 3 }}>
-            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                fontWeight: 700,
+                mb: 2
+              }}>
               Ulasci i odbijeni pokušaji po danu — {stats.buildingName}
             </Typography>
             <Box sx={{ width: '100%', height: 320 }}>
