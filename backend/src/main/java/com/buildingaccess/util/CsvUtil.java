@@ -2,10 +2,16 @@ package com.buildingaccess.util;
 
 import java.util.List;
 
-/** Prost CSV izvoz (bez spoljne biblioteke) - BOM na pocetku da Excel ispravno prikaze c/c/s/z/dj. */
+/**
+ * Prost CSV izvoz (bez spoljne biblioteke) - BOM na pocetku da Excel ispravno prikaze c/c/s/z/dj.
+ * Separator je ';' (ne ',') jer Excel na srpskim/evropskim regionalnim podesavanjima koristi zarez
+ * kao decimalni separator, pa mu je podrazumevani CSV list-separator tacka-zarez - sa obicnim
+ * zarezom bi ceo red upao u jednu kolonu pri otvaranju dupli-klikom.
+ */
 public final class CsvUtil {
 
     private static final char BOM = '\uFEFF';
+    private static final char SEPARATOR = ';';
 
     private CsvUtil() {
     }
@@ -24,7 +30,7 @@ public final class CsvUtil {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < values.size(); i++) {
             if (i > 0) {
-                sb.append(',');
+                sb.append(SEPARATOR);
             }
             sb.append(escape(values.get(i)));
         }
@@ -36,7 +42,7 @@ public final class CsvUtil {
         if (value == null) {
             return "";
         }
-        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+        if (value.indexOf(SEPARATOR) >= 0 || value.contains(",") || value.contains("\"") || value.contains("\n")) {
             return "\"" + value.replace("\"", "\"\"") + "\"";
         }
         return value;
