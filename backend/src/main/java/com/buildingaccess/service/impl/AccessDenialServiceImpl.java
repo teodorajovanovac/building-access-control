@@ -5,7 +5,6 @@ import com.buildingaccess.mapper.AccessDenialMapper;
 import com.buildingaccess.model.enums.DenialReasonType;
 import com.buildingaccess.repository.AccessDenialRepository;
 import com.buildingaccess.service.AccessDenialService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,10 +16,13 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class AccessDenialServiceImpl implements AccessDenialService {
 
     private final AccessDenialRepository accessDenialRepository;
+
+    public AccessDenialServiceImpl(AccessDenialRepository accessDenialRepository) {
+        this.accessDenialRepository = accessDenialRepository;
+    }
 
     /** SK12 — dnevni odbijeni pokušaji zgrade. */
     @Override

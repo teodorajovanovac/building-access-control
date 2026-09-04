@@ -6,7 +6,6 @@ import com.buildingaccess.model.enums.GatePassStatus;
 import com.buildingaccess.service.GatePassService;
 import com.buildingaccess.util.CsvUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,11 +25,14 @@ import java.util.List;
 /** SK17 — pretraga/filtriranje/sortiranje/paginacija svih propusnica (admin). */
 @RestController
 @RequestMapping("/api/admin/gatepasses")
-@RequiredArgsConstructor
 @Tag(name = "Gate Passes (Admin)", description = "SK17 Pregled/pretraga svih propusnica")
 public class GatePassQueryController {
 
     private final GatePassService gatePassService;
+
+    public GatePassQueryController(GatePassService gatePassService) {
+        this.gatePassService = gatePassService;
+    }
 
     @GetMapping("/search")
     public PageResponse<GatePassResponse> search(@RequestParam(required = false) Long buildingId,

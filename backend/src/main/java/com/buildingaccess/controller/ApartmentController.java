@@ -6,7 +6,6 @@ import com.buildingaccess.dto.common.PageResponse;
 import com.buildingaccess.service.ApartmentService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +23,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/apartments")
-@RequiredArgsConstructor
 @Tag(name = "Apartments (Admin)", description = "SK14 Upravljanje stanovima (CRUD)")
 public class ApartmentController {
 
     private final ApartmentService apartmentService;
+
+    public ApartmentController(ApartmentService apartmentService) {
+        this.apartmentService = apartmentService;
+    }
 
     /** Puna lista — koristi je npr. dropdown za dodelu stana korisniku. */
     @GetMapping

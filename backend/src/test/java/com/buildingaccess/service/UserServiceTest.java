@@ -100,7 +100,9 @@ class UserServiceTest {
 
     @Test
     void create_resident_generatesBadgeCodeAndSetsApartment() {
-        Apartment apartment = Apartment.builder().id(10L).number("5").build();
+        Apartment apartment = new Apartment();
+        apartment.setId(10L);
+        apartment.setNumber("5");
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(apartmentService.findEntity(10L)).thenReturn(apartment);
         when(userRepository.existsByBadgeCode(anyString())).thenReturn(false);
@@ -117,7 +119,9 @@ class UserServiceTest {
 
     @Test
     void create_security_setsBuildingAndNoBadgeCode() {
-        Building building = Building.builder().id(20L).name("Zgrada B").build();
+        Building building = new Building();
+        building.setId(20L);
+        building.setName("Zgrada B");
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(buildingService.findEntity(20L)).thenReturn(building);
 
@@ -141,7 +145,9 @@ class UserServiceTest {
 
     @Test
     void create_staff_generatesBadgeCodeAndSetsBuildingAndJobTitle() {
-        Building building = Building.builder().id(30L).name("Zgrada C").build();
+        Building building = new Building();
+        building.setId(30L);
+        building.setName("Zgrada C");
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(buildingService.findEntity(30L)).thenReturn(building);
         when(userRepository.existsByBadgeCode(anyString())).thenReturn(false);
@@ -174,7 +180,13 @@ class UserServiceTest {
     // ---------- delete — blokirano ako postoje povezani podaci ----------
 
     private User existingUser() {
-        return User.builder().id(1L).firstName("A").lastName("B").email("a@b.com").role(Role.RESIDENT).build();
+        User user = new User();
+        user.setId(1L);
+        user.setFirstName("A");
+        user.setLastName("B");
+        user.setEmail("a@b.com");
+        user.setRole(Role.RESIDENT);
+        return user;
     }
 
     @Test
@@ -235,7 +247,9 @@ class UserServiceTest {
     @Test
     void update_residentRole_updatesApartmentWhenProvided() {
         User user = existingUser();
-        Apartment newApartment = Apartment.builder().id(99L).number("9").build();
+        Apartment newApartment = new Apartment();
+        newApartment.setId(99L);
+        newApartment.setNumber("9");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(apartmentService.findEntity(99L)).thenReturn(newApartment);
 
@@ -248,7 +262,11 @@ class UserServiceTest {
 
     @Test
     void update_securityRole_ignoresApartmentId() {
-        User securityUser = User.builder().id(2L).firstName("S").lastName("Sec").role(Role.SECURITY).build();
+        User securityUser = new User();
+        securityUser.setId(2L);
+        securityUser.setFirstName("S");
+        securityUser.setLastName("Sec");
+        securityUser.setRole(Role.SECURITY);
         when(userRepository.findById(2L)).thenReturn(Optional.of(securityUser));
 
         UserUpdateRequest request = new UserUpdateRequest("Novo", "Ime", 99L, null, null);
@@ -260,8 +278,14 @@ class UserServiceTest {
 
     @Test
     void update_staffRole_updatesBuildingAndJobTitle() {
-        Building newBuilding = Building.builder().id(40L).name("Zgrada D").build();
-        User staffUser = User.builder().id(3L).firstName("S").lastName("Taff").role(Role.STAFF).build();
+        Building newBuilding = new Building();
+        newBuilding.setId(40L);
+        newBuilding.setName("Zgrada D");
+        User staffUser = new User();
+        staffUser.setId(3L);
+        staffUser.setFirstName("S");
+        staffUser.setLastName("Taff");
+        staffUser.setRole(Role.STAFF);
         when(userRepository.findById(3L)).thenReturn(Optional.of(staffUser));
         when(buildingService.findEntity(40L)).thenReturn(newBuilding);
 

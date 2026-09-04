@@ -78,7 +78,9 @@ class AuthServiceTest {
     @Test
     void register_validRequest_createsResidentWithBadgeCodeAndReturnsToken() {
         RegisterRequest request = new RegisterRequest("Ana", "Anić", "ana@example.com", "lozinka1", 5L);
-        Apartment apartment = Apartment.builder().id(5L).number("7").build();
+        Apartment apartment = new Apartment();
+        apartment.setId(5L);
+        apartment.setNumber("7");
 
         when(userRepository.existsByEmail("ana@example.com")).thenReturn(false);
         when(apartmentRepository.findById(5L)).thenReturn(Optional.of(apartment));
@@ -118,7 +120,12 @@ class AuthServiceTest {
     @Test
     void login_validCredentials_returnsAuthResponse() {
         LoginRequest request = new LoginRequest("ana@example.com", "lozinka1");
-        User user = User.builder().id(1L).firstName("Ana").lastName("Anić").email("ana@example.com").role(Role.RESIDENT).build();
+        User user = new User();
+        user.setId(1L);
+        user.setFirstName("Ana");
+        user.setLastName("Anić");
+        user.setEmail("ana@example.com");
+        user.setRole(Role.RESIDENT);
 
         when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
         when(jwtService.generateToken(user)).thenReturn("jwt-token");

@@ -20,7 +20,6 @@ import com.buildingaccess.repository.UserRepository;
 import com.buildingaccess.service.AccessProcessingService;
 import com.buildingaccess.service.GatePassService;
 import com.buildingaccess.service.MailService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +35,6 @@ import java.util.stream.Stream;
  * uključujući automatsko naizmenično evidentiranje ulaska/izlaska za stanara i osoblje.
  */
 @Service
-@RequiredArgsConstructor
 public class AccessProcessingServiceImpl implements AccessProcessingService {
 
     private final GatePassRepository gatePassRepository;
@@ -45,6 +43,20 @@ public class AccessProcessingServiceImpl implements AccessProcessingService {
     private final AccessDenialRepository accessDenialRepository;
     private final GatePassService gatePassService;
     private final MailService mailService;
+
+    public AccessProcessingServiceImpl(GatePassRepository gatePassRepository,
+                                        UserRepository userRepository,
+                                        EntryLogRepository entryLogRepository,
+                                        AccessDenialRepository accessDenialRepository,
+                                        GatePassService gatePassService,
+                                        MailService mailService) {
+        this.gatePassRepository = gatePassRepository;
+        this.userRepository = userRepository;
+        this.entryLogRepository = entryLogRepository;
+        this.accessDenialRepository = accessDenialRepository;
+        this.gatePassService = gatePassService;
+        this.mailService = mailService;
+    }
 
     @Override
     @Transactional
@@ -65,13 +77,12 @@ public class AccessProcessingServiceImpl implements AccessProcessingService {
             return toggleEntry(type, fullName(person), last, e -> e.setUser(person), security, false);
         }
 
-        AccessDenial denial = AccessDenial.builder()
-                .enteredCode(code)
-                .attemptTime(LocalDateTime.now())
-                .reasonType(DenialReasonType.INVALID_CODE)
-                .building(security.getBuilding())
-                .processedBy(security)
-                .build();
+        AccessDenial denial = new AccessDenial();
+        denial.setEnteredCode(code);
+        denial.setAttemptTime(LocalDateTime.now());
+        denial.setReasonType(DenialReasonType.INVALID_CODE);
+        denial.setBuilding(security.getBuilding());
+        denial.setProcessedBy(security);
         accessDenialRepository.save(denial);
         return new ScanResultResponse(ScanOutcome.DENIED, "Kod nije prepoznat.", null, null, code, null, null);
     }
@@ -137,16 +148,15 @@ public class AccessProcessingServiceImpl implements AccessProcessingService {
                 ? request.personName()
                 : (gatePass != null ? gatePass.getGuestName() : null);
 
-        AccessDenial denial = AccessDenial.builder()
-                .enteredCode(request.code())
-                .personName(personName)
-                .attemptTime(LocalDateTime.now())
-                .reasonType(DenialReasonType.MANUAL_DENIAL)
-                .reasonNote(request.reasonNote())
-                .gatePass(gatePass)
-                .building(security.getBuilding())
-                .processedBy(security)
-                .build();
+        AccessDenial denial = new AccessDenial();
+        denial.setEnteredCode(request.code());
+        denial.setPersonName(personName);
+        denial.setAttemptTime(LocalDateTime.now());
+        denial.setReasonType(DenialReasonType.MANUAL_DENIAL);
+        denial.setReasonNote(request.reasonNote());
+        denial.setGatePass(gatePass);
+        denial.setBuilding(security.getBuilding());
+        denial.setProcessedBy(security);
         accessDenialRepository.save(denial);
 
         return new ScanResultResponse(ScanOutcome.DENIED, "Ulazak ručno odbijen.", null, personName, request.code(), null, null);
@@ -165,14 +175,13 @@ public class AccessProcessingServiceImpl implements AccessProcessingService {
                 && gatePass.getUsedEntries() < gatePass.getMaxEntries();
 
         if (approvable) {
-            EntryLog entryLog = EntryLog.builder()
-                    .personType(PersonType.GUEST)
-                    .personName(gatePass.getGuestName())
-                    .entryTime(now)
-                    .building(gatePass.getApartment().getBuilding())
-                    .processedBy(security)
-                    .gatePass(gatePass)
-                    .build();
+            EntryLog entryLog = new EntryLog();
+            entryLog.setPersonType(PersonType.GUEST);
+            entryLog.setPersonName(gatePass.getGuestName());
+            entryLog.setEntryTime(now);
+            entryLog.setBuilding(gatePass.getApartment().getBuilding());
+            entryLog.setProcessedBy(security);
+            entryLog.setGatePass(gatePass);
             entryLogRepository.save(entryLog);
 
             gatePass.setUsedEntries(gatePass.getUsedEntries() + 1);
@@ -193,15 +202,14 @@ public class AccessProcessingServiceImpl implements AccessProcessingService {
             case ACTIVE -> DenialReasonType.USED_UP; // ACTIVE ali dostignut maxEntries (retka konkurentna situacija)
         };
 
-        AccessDenial denial = AccessDenial.builder()
-                .enteredCode(gatePass.getCode())
-                .personName(gatePass.getGuestName())
-                .attemptTime(now)
-                .reasonType(reason)
-                .gatePass(gatePass)
-                .building(gatePass.getApartment().getBuilding())
-                .processedBy(security)
-                .build();
+        AccessDenial denial = new AccessDenial();
+        denial.setEnteredCode(gatePass.getCode());
+        denial.setPersonName(gatePass.getGuestName());
+        denial.setAttemptTime(now);
+        denial.setReasonType(reason);
+        denial.setGatePass(gatePass);
+        denial.setBuilding(gatePass.getApartment().getBuilding());
+        denial.setProcessedBy(security);
         accessDenialRepository.save(denial);
 
         return new ScanResultResponse(ScanOutcome.DENIED, denialMessage(reason),
@@ -228,15 +236,14 @@ public class AccessProcessingServiceImpl implements AccessProcessingService {
         LocalDateTime now = LocalDateTime.now();
 
         if (lastLogOpt.isEmpty() || lastLogOpt.get().getExitTime() != null) {
-            EntryLog.EntryLogBuilder builder = EntryLog.builder()
-                    .personType(type)
-                    .personName(personName)
-                    .entryTime(now)
-                    .manualEntry(manual)
-                    .note(manual ? "Ručni unos" : null)
-                    .building(security.getBuilding())
-                    .processedBy(security);
-            EntryLog entryLog = builder.build();
+            EntryLog entryLog = new EntryLog();
+            entryLog.setPersonType(type);
+            entryLog.setPersonName(personName);
+            entryLog.setEntryTime(now);
+            entryLog.setManualEntry(manual);
+            entryLog.setNote(manual ? "Ručni unos" : null);
+            entryLog.setBuilding(security.getBuilding());
+            entryLog.setProcessedBy(security);
             linkPerson.accept(entryLog);
             entryLogRepository.save(entryLog);
             return new ScanResultResponse(ScanOutcome.ENTRY_RECORDED, "Ulazak evidentiran!", type, personName, null, now, null);

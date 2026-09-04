@@ -13,7 +13,6 @@ import com.buildingaccess.repository.UserRepository;
 import com.buildingaccess.security.JwtService;
 import com.buildingaccess.service.AuthService;
 import com.buildingaccess.util.CodeGeneratorUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
@@ -31,6 +29,18 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+
+    public AuthServiceImpl(UserRepository userRepository,
+                            ApartmentRepository apartmentRepository,
+                            PasswordEncoder passwordEncoder,
+                            AuthenticationManager authenticationManager,
+                            JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.apartmentRepository = apartmentRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+    }
 
     @Override
     @Transactional
@@ -41,16 +51,15 @@ public class AuthServiceImpl implements AuthService {
         Apartment apartment = apartmentRepository.findById(request.apartmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Stan nije pronađen: " + request.apartmentId()));
 
-        User user = User.builder()
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .role(Role.RESIDENT)
-                .badgeCode(generateUniqueBadgeCode())
-                .apartment(apartment)
-                .createdAt(LocalDateTime.now())
-                .build();
+        User user = new User();
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setEmail(request.email());
+        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setRole(Role.RESIDENT);
+        user.setBadgeCode(generateUniqueBadgeCode());
+        user.setApartment(apartment);
+        user.setCreatedAt(LocalDateTime.now());
         user = userRepository.save(user);
 
         return toAuthResponse(user);

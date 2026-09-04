@@ -10,7 +10,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,7 +23,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Apartment {
 
     @Id
@@ -39,7 +37,6 @@ public class Apartment {
     @JoinColumn(name = "building_id", nullable = false)
     private Building building;
 
-    @Builder.Default
     @OneToMany(mappedBy = "apartment")
     private List<User> residents = new ArrayList<>();
 }

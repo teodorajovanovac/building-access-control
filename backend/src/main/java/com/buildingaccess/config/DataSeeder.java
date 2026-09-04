@@ -3,7 +3,6 @@ package com.buildingaccess.config;
 import com.buildingaccess.model.User;
 import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +18,6 @@ import java.time.LocalDateTime;
  * javnog deploya.
  */
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class DataSeeder implements CommandLineRunner {
 
@@ -29,20 +27,24 @@ public class DataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    public DataSeeder(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
     @Override
     public void run(String... args) {
         if (userRepository.existsByRole(Role.ADMIN)) {
             return;
         }
 
-        User admin = User.builder()
-                .firstName("Admin")
-                .lastName("Admin")
-                .email(DEFAULT_ADMIN_EMAIL)
-                .password(passwordEncoder.encode(DEFAULT_ADMIN_PASSWORD))
-                .role(Role.ADMIN)
-                .createdAt(LocalDateTime.now())
-                .build();
+        User admin = new User();
+        admin.setFirstName("Admin");
+        admin.setLastName("Admin");
+        admin.setEmail(DEFAULT_ADMIN_EMAIL);
+        admin.setPassword(passwordEncoder.encode(DEFAULT_ADMIN_PASSWORD));
+        admin.setRole(Role.ADMIN);
+        admin.setCreatedAt(LocalDateTime.now());
         userRepository.save(admin);
 
         log.warn("Nije pronađen nijedan ADMIN nalog — kreiran podrazumevani: email={}, password={} (promeniti/obrisati pre produkcije!)",

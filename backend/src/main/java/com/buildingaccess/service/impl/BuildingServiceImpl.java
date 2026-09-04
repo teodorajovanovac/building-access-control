@@ -15,14 +15,12 @@ import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.repository.GatePassRepository;
 import com.buildingaccess.repository.UserRepository;
 import com.buildingaccess.service.BuildingService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class BuildingServiceImpl implements BuildingService {
 
     private final BuildingRepository buildingRepository;
@@ -31,6 +29,20 @@ public class BuildingServiceImpl implements BuildingService {
     private final GatePassRepository gatePassRepository;
     private final EntryLogRepository entryLogRepository;
     private final AccessDenialRepository accessDenialRepository;
+
+    public BuildingServiceImpl(BuildingRepository buildingRepository,
+                                ApartmentRepository apartmentRepository,
+                                UserRepository userRepository,
+                                GatePassRepository gatePassRepository,
+                                EntryLogRepository entryLogRepository,
+                                AccessDenialRepository accessDenialRepository) {
+        this.buildingRepository = buildingRepository;
+        this.apartmentRepository = apartmentRepository;
+        this.userRepository = userRepository;
+        this.gatePassRepository = gatePassRepository;
+        this.entryLogRepository = entryLogRepository;
+        this.accessDenialRepository = accessDenialRepository;
+    }
 
     @Override
     public List<BuildingResponse> getAll() {
@@ -51,10 +63,9 @@ public class BuildingServiceImpl implements BuildingService {
     @Override
     @Transactional
     public BuildingResponse create(BuildingRequest request) {
-        Building building = Building.builder()
-                .name(request.name())
-                .address(request.address())
-                .build();
+        Building building = new Building();
+        building.setName(request.name());
+        building.setAddress(request.address());
         return BuildingMapper.toResponse(buildingRepository.save(building));
     }
 

@@ -11,7 +11,6 @@ import com.buildingaccess.service.AccessProcessingService;
 import com.buildingaccess.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,12 +24,16 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/security")
-@RequiredArgsConstructor
 @Tag(name = "Access Processing (Security)", description = "SK8-SK11 Obrada dolaska, ručna pretraga i odbijanje ulaska")
 public class AccessController {
 
     private final AccessProcessingService accessProcessingService;
     private final UserService userService;
+
+    public AccessController(AccessProcessingService accessProcessingService, UserService userService) {
+        this.accessProcessingService = accessProcessingService;
+        this.userService = userService;
+    }
 
     /** Obezbeđenju treba sopstvena zgrada (id) da bi pozvalo npr. statistiku bez ručnog unosa. */
     @GetMapping("/me")

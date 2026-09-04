@@ -73,10 +73,23 @@ class AccessProcessingServiceTest {
         service = new AccessProcessingServiceImpl(gatePassRepository, userRepository,
                 entryLogRepository, accessDenialRepository, gatePassService, mailService);
 
-        building = Building.builder().id(1L).name("Zgrada A").address("Adresa 1").build();
-        apartment = Apartment.builder().id(10L).number("12").floor(3).building(building).build();
-        security = User.builder().id(100L).firstName("Pera").lastName("Perić").role(Role.SECURITY)
-                .building(building).build();
+        building = new Building();
+        building.setId(1L);
+        building.setName("Zgrada A");
+        building.setAddress("Adresa 1");
+
+        apartment = new Apartment();
+        apartment.setId(10L);
+        apartment.setNumber("12");
+        apartment.setFloor(3);
+        apartment.setBuilding(building);
+
+        security = new User();
+        security.setId(100L);
+        security.setFirstName("Pera");
+        security.setLastName("Perić");
+        security.setRole(Role.SECURITY);
+        security.setBuilding(building);
 
         // changeStatus u pravoj implementaciji menja status na propusnici i beleži istoriju;
         // simuliramo isto ponašanje da bismo mogli da proverimo posledičnu (approvable) logiku.
@@ -91,18 +104,18 @@ class AccessProcessingServiceTest {
     }
 
     private GatePass activeGatePass(int usedEntries, int maxEntries, LocalDateTime validTo) {
-        return GatePass.builder()
-                .id(500L)
-                .code("GP-TEST1234")
-                .guestName("Gost Gostić")
-                .status(GatePassStatus.ACTIVE)
-                .usedEntries(usedEntries)
-                .maxEntries(maxEntries)
-                .validFrom(LocalDateTime.now().minusDays(1))
-                .validTo(validTo)
-                .type(GatePassType.LIMITED)
-                .apartment(apartment)
-                .build();
+        GatePass gatePass = new GatePass();
+        gatePass.setId(500L);
+        gatePass.setCode("GP-TEST1234");
+        gatePass.setGuestName("Gost Gostić");
+        gatePass.setStatus(GatePassStatus.ACTIVE);
+        gatePass.setUsedEntries(usedEntries);
+        gatePass.setMaxEntries(maxEntries);
+        gatePass.setValidFrom(LocalDateTime.now().minusDays(1));
+        gatePass.setValidTo(validTo);
+        gatePass.setType(GatePassType.LIMITED);
+        gatePass.setApartment(apartment);
+        return gatePass;
     }
 
     // ---------- SK8 — propusnica gosta ----------
@@ -213,8 +226,13 @@ class AccessProcessingServiceTest {
 
     @Test
     void processScan_residentBadge_noPriorLog_recordsEntry() {
-        User resident = User.builder().id(20L).firstName("Ana").lastName("Anić").role(Role.RESIDENT)
-                .badgeCode("RES-AAAA1111").apartment(apartment).build();
+        User resident = new User();
+        resident.setId(20L);
+        resident.setFirstName("Ana");
+        resident.setLastName("Anić");
+        resident.setRole(Role.RESIDENT);
+        resident.setBadgeCode("RES-AAAA1111");
+        resident.setApartment(apartment);
         when(gatePassRepository.findByCode("RES-AAAA1111")).thenReturn(Optional.empty());
         when(userRepository.findByBadgeCode("RES-AAAA1111")).thenReturn(Optional.of(resident));
         when(entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(20L)).thenReturn(Optional.empty());
@@ -234,10 +252,19 @@ class AccessProcessingServiceTest {
 
     @Test
     void processScan_residentBadge_secondConsecutiveScan_recordsExit() {
-        User resident = User.builder().id(20L).firstName("Ana").lastName("Anić").role(Role.RESIDENT)
-                .badgeCode("RES-AAAA1111").apartment(apartment).build();
-        EntryLog openLog = EntryLog.builder().id(900L).personType(PersonType.RESIDENT)
-                .entryTime(LocalDateTime.now().minusHours(2)).exitTime(null).user(resident).build();
+        User resident = new User();
+        resident.setId(20L);
+        resident.setFirstName("Ana");
+        resident.setLastName("Anić");
+        resident.setRole(Role.RESIDENT);
+        resident.setBadgeCode("RES-AAAA1111");
+        resident.setApartment(apartment);
+        EntryLog openLog = new EntryLog();
+        openLog.setId(900L);
+        openLog.setPersonType(PersonType.RESIDENT);
+        openLog.setEntryTime(LocalDateTime.now().minusHours(2));
+        openLog.setExitTime(null);
+        openLog.setUser(resident);
 
         when(gatePassRepository.findByCode("RES-AAAA1111")).thenReturn(Optional.empty());
         when(userRepository.findByBadgeCode("RES-AAAA1111")).thenReturn(Optional.of(resident));
@@ -253,8 +280,14 @@ class AccessProcessingServiceTest {
 
     @Test
     void processScan_staffBadge_noPriorLog_recordsEntry() {
-        User staff = User.builder().id(30L).firstName("Marko").lastName("Održavanje").role(Role.STAFF)
-                .jobTitle("Održavanje").badgeCode("STF-B1B1B1B1").building(building).build();
+        User staff = new User();
+        staff.setId(30L);
+        staff.setFirstName("Marko");
+        staff.setLastName("Održavanje");
+        staff.setRole(Role.STAFF);
+        staff.setJobTitle("Održavanje");
+        staff.setBadgeCode("STF-B1B1B1B1");
+        staff.setBuilding(building);
         when(gatePassRepository.findByCode("STF-B1B1B1B1")).thenReturn(Optional.empty());
         when(userRepository.findByBadgeCode("STF-B1B1B1B1")).thenReturn(Optional.of(staff));
         when(entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(30L)).thenReturn(Optional.empty());
@@ -273,10 +306,20 @@ class AccessProcessingServiceTest {
 
     @Test
     void processScan_staffBadge_secondConsecutiveScan_recordsExit() {
-        User staff = User.builder().id(30L).firstName("Marko").lastName("Održavanje").role(Role.STAFF)
-                .jobTitle("Održavanje").badgeCode("STF-B1B1B1B1").building(building).build();
-        EntryLog openLog = EntryLog.builder().id(901L).personType(PersonType.STAFF)
-                .entryTime(LocalDateTime.now().minusHours(1)).exitTime(null).user(staff).build();
+        User staff = new User();
+        staff.setId(30L);
+        staff.setFirstName("Marko");
+        staff.setLastName("Održavanje");
+        staff.setRole(Role.STAFF);
+        staff.setJobTitle("Održavanje");
+        staff.setBadgeCode("STF-B1B1B1B1");
+        staff.setBuilding(building);
+        EntryLog openLog = new EntryLog();
+        openLog.setId(901L);
+        openLog.setPersonType(PersonType.STAFF);
+        openLog.setEntryTime(LocalDateTime.now().minusHours(1));
+        openLog.setExitTime(null);
+        openLog.setUser(staff);
 
         when(gatePassRepository.findByCode("STF-B1B1B1B1")).thenReturn(Optional.empty());
         when(userRepository.findByBadgeCode("STF-B1B1B1B1")).thenReturn(Optional.of(staff));
@@ -307,7 +350,10 @@ class AccessProcessingServiceTest {
 
     @Test
     void processScan_securityWithoutAssignedBuilding_throwsIllegalState() {
-        User securityNoBuilding = User.builder().id(101L).role(Role.SECURITY).building(null).build();
+        User securityNoBuilding = new User();
+        securityNoBuilding.setId(101L);
+        securityNoBuilding.setRole(Role.SECURITY);
+        securityNoBuilding.setBuilding(null);
 
         assertThatThrownBy(() -> service.processScan("ANY-CODE", securityNoBuilding))
                 .isInstanceOf(IllegalStateException.class);
@@ -317,8 +363,12 @@ class AccessProcessingServiceTest {
 
     @Test
     void processManual_resident_recordsEntryWithManualFlag() {
-        User resident = User.builder().id(21L).firstName("Iva").lastName("Ivić").role(Role.RESIDENT)
-                .apartment(apartment).build();
+        User resident = new User();
+        resident.setId(21L);
+        resident.setFirstName("Iva");
+        resident.setLastName("Ivić");
+        resident.setRole(Role.RESIDENT);
+        resident.setApartment(apartment);
         when(userRepository.findById(21L)).thenReturn(Optional.of(resident));
         when(entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(21L)).thenReturn(Optional.empty());
 
@@ -349,8 +399,13 @@ class AccessProcessingServiceTest {
 
     @Test
     void processManual_staff_recordsEntryWithManualFlag() {
-        User staff = User.builder().id(31L).firstName("Nina").lastName("Čistačica").role(Role.STAFF)
-                .jobTitle("Čišćenje").building(building).build();
+        User staff = new User();
+        staff.setId(31L);
+        staff.setFirstName("Nina");
+        staff.setLastName("Čistačica");
+        staff.setRole(Role.STAFF);
+        staff.setJobTitle("Čišćenje");
+        staff.setBuilding(building);
         when(userRepository.findById(31L)).thenReturn(Optional.of(staff));
         when(entryLogRepository.findFirstByUserIdOrderByEntryTimeDesc(31L)).thenReturn(Optional.empty());
 

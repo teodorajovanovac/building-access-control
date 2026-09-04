@@ -5,7 +5,6 @@ import com.buildingaccess.mapper.EntryLogMapper;
 import com.buildingaccess.model.enums.PersonType;
 import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.service.EntryLogService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,10 +16,13 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class EntryLogServiceImpl implements EntryLogService {
 
     private final EntryLogRepository entryLogRepository;
+
+    public EntryLogServiceImpl(EntryLogRepository entryLogRepository) {
+        this.entryLogRepository = entryLogRepository;
+    }
 
     /** SK12 — dnevna evidencija zgrade (uključuje lica trenutno prisutna, bez evidentiranog izlaska). */
     @Override

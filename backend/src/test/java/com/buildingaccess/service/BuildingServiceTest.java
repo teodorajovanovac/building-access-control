@@ -55,14 +55,23 @@ class BuildingServiceTest {
     }
 
     private Building buildingWith(List<Apartment> apartments) {
-        return Building.builder().id(1L).name("Zgrada A").address("Adresa 1")
-                .apartments(apartments).build();
+        Building building = new Building();
+        building.setId(1L);
+        building.setName("Zgrada A");
+        building.setAddress("Adresa 1");
+        building.setApartments(apartments);
+        return building;
     }
 
     @Test
     void delete_apartmentHasResidents_throwsInvalidStatus() {
-        Apartment apartment = Apartment.builder().id(10L).number("1")
-                .residents(List.of(User.builder().id(1L).role(Role.RESIDENT).build())).build();
+        User resident = new User();
+        resident.setId(1L);
+        resident.setRole(Role.RESIDENT);
+        Apartment apartment = new Apartment();
+        apartment.setId(10L);
+        apartment.setNumber("1");
+        apartment.setResidents(List.of(resident));
         Building building = buildingWith(List.of(apartment));
         when(buildingRepository.findById(1L)).thenReturn(Optional.of(building));
 
@@ -72,7 +81,10 @@ class BuildingServiceTest {
 
     @Test
     void delete_apartmentHasGatePasses_throwsInvalidStatus() {
-        Apartment apartment = Apartment.builder().id(10L).number("1").residents(new ArrayList<>()).build();
+        Apartment apartment = new Apartment();
+        apartment.setId(10L);
+        apartment.setNumber("1");
+        apartment.setResidents(new ArrayList<>());
         Building building = buildingWith(List.of(apartment));
         when(buildingRepository.findById(1L)).thenReturn(Optional.of(building));
         when(gatePassRepository.existsByApartmentId(10L)).thenReturn(true);

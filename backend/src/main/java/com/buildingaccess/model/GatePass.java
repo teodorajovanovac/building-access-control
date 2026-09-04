@@ -16,7 +16,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,7 +30,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class GatePass {
 
     @Id
@@ -55,14 +53,12 @@ public class GatePass {
 
     private int maxEntries;
 
-    @Builder.Default
     private int usedEntries = 0;
 
     @Enumerated(EnumType.STRING)
     private GatePassType type;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private GatePassStatus status = GatePassStatus.ACTIVE;
 
     private LocalDateTime createdAt;
@@ -76,12 +72,10 @@ public class GatePass {
     @JoinColumn(name = "apartment_id", nullable = false)
     private Apartment apartment;
 
-    @Builder.Default
     @OneToMany(mappedBy = "gatePass")
     @OrderBy("entryTime DESC")
     private List<EntryLog> entryLogs = new ArrayList<>();
 
-    @Builder.Default
     @OneToMany(mappedBy = "gatePass")
     @OrderBy("changedAt DESC")
     private List<PassStatusHistory> statusHistory = new ArrayList<>();

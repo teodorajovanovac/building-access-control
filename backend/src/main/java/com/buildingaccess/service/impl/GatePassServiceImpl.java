@@ -18,7 +18,6 @@ import com.buildingaccess.repository.PassStatusHistoryRepository;
 import com.buildingaccess.service.GatePassService;
 import com.buildingaccess.service.MailService;
 import com.buildingaccess.util.CodeGeneratorUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,12 +29,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class GatePassServiceImpl implements GatePassService {
 
     private final GatePassRepository gatePassRepository;
     private final PassStatusHistoryRepository historyRepository;
     private final MailService mailService;
+
+    public GatePassServiceImpl(GatePassRepository gatePassRepository,
+                                PassStatusHistoryRepository historyRepository,
+                                MailService mailService) {
+        this.gatePassRepository = gatePassRepository;
+        this.historyRepository = historyRepository;
+        this.mailService = mailService;
+    }
 
     @Override
     public Page<GatePassResponse> getMine(User resident, Pageable pageable) {
@@ -102,22 +108,21 @@ public class GatePassServiceImpl implements GatePassService {
             throw new IllegalArgumentException("Stanar nema dodeljen stan");
         }
 
-        GatePass gatePass = GatePass.builder()
-                .code(generateUniqueCode())
-                .guestName(request.guestName())
-                .guestPhone(request.guestPhone())
-                .guestEmail(request.guestEmail())
-                .reason(request.reason())
-                .validFrom(request.validFrom())
-                .validTo(request.validTo())
-                .maxEntries(request.maxEntries())
-                .usedEntries(0)
-                .type(request.type())
-                .status(GatePassStatus.ACTIVE)
-                .createdAt(LocalDateTime.now())
-                .createdBy(resident)
-                .apartment(resident.getApartment())
-                .build();
+        GatePass gatePass = new GatePass();
+        gatePass.setCode(generateUniqueCode());
+        gatePass.setGuestName(request.guestName());
+        gatePass.setGuestPhone(request.guestPhone());
+        gatePass.setGuestEmail(request.guestEmail());
+        gatePass.setReason(request.reason());
+        gatePass.setValidFrom(request.validFrom());
+        gatePass.setValidTo(request.validTo());
+        gatePass.setMaxEntries(request.maxEntries());
+        gatePass.setUsedEntries(0);
+        gatePass.setType(request.type());
+        gatePass.setStatus(GatePassStatus.ACTIVE);
+        gatePass.setCreatedAt(LocalDateTime.now());
+        gatePass.setCreatedBy(resident);
+        gatePass.setApartment(resident.getApartment());
 
         GatePass saved = gatePassRepository.save(gatePass);
 
@@ -173,13 +178,12 @@ public class GatePassServiceImpl implements GatePassService {
             return;
         }
         gatePass.setStatus(newStatus);
-        PassStatusHistory history = PassStatusHistory.builder()
-                .gatePass(gatePass)
-                .previousStatus(previous)
-                .newStatus(newStatus)
-                .changedAt(LocalDateTime.now())
-                .changedBy(changedBy)
-                .build();
+        PassStatusHistory history = new PassStatusHistory();
+        history.setGatePass(gatePass);
+        history.setPreviousStatus(previous);
+        history.setNewStatus(newStatus);
+        history.setChangedAt(LocalDateTime.now());
+        history.setChangedBy(changedBy);
         historyRepository.save(history);
     }
 

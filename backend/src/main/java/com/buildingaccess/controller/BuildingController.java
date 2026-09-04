@@ -5,7 +5,6 @@ import com.buildingaccess.dto.building.BuildingResponse;
 import com.buildingaccess.service.BuildingService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,11 +20,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/buildings")
-@RequiredArgsConstructor
 @Tag(name = "Buildings (Admin)", description = "SK13 Upravljanje zgradama (CRUD)")
 public class BuildingController {
 
     private final BuildingService buildingService;
+
+    public BuildingController(BuildingService buildingService) {
+        this.buildingService = buildingService;
+    }
 
     @GetMapping
     public List<BuildingResponse> getAll() {

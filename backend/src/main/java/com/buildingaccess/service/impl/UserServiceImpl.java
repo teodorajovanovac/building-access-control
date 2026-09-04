@@ -19,7 +19,6 @@ import com.buildingaccess.service.ApartmentService;
 import com.buildingaccess.service.BuildingService;
 import com.buildingaccess.service.UserService;
 import com.buildingaccess.util.CodeGeneratorUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,7 +29,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -40,6 +38,22 @@ public class UserServiceImpl implements UserService {
     private final GatePassRepository gatePassRepository;
     private final EntryLogRepository entryLogRepository;
     private final AccessDenialRepository accessDenialRepository;
+
+    public UserServiceImpl(UserRepository userRepository,
+                            PasswordEncoder passwordEncoder,
+                            ApartmentService apartmentService,
+                            BuildingService buildingService,
+                            GatePassRepository gatePassRepository,
+                            EntryLogRepository entryLogRepository,
+                            AccessDenialRepository accessDenialRepository) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.apartmentService = apartmentService;
+        this.buildingService = buildingService;
+        this.gatePassRepository = gatePassRepository;
+        this.entryLogRepository = entryLogRepository;
+        this.accessDenialRepository = accessDenialRepository;
+    }
 
     @Override
     public List<UserResponse> getAll() {
@@ -77,13 +91,13 @@ public class UserServiceImpl implements UserService {
             throw new DuplicateResourceException("Nalog sa ovim email-om već postoji!");
         }
 
-        User.UserBuilder builder = User.builder()
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .role(request.role())
-                .createdAt(LocalDateTime.now());
+        User user = new User();
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setEmail(request.email());
+        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setRole(request.role());
+        user.setCreatedAt(LocalDateTime.now());
 
         switch (request.role()) {
             case RESIDENT -> {
@@ -91,28 +105,31 @@ public class UserServiceImpl implements UserService {
                     throw new IllegalArgumentException("apartmentId je obavezan za ulogu RESIDENT");
                 }
                 Apartment apartment = apartmentService.findEntity(request.apartmentId());
-                builder.apartment(apartment).badgeCode(generateUniqueBadgeCode());
+                user.setApartment(apartment);
+                user.setBadgeCode(generateUniqueBadgeCode());
             }
             case SECURITY -> {
                 if (request.buildingId() == null) {
                     throw new IllegalArgumentException("buildingId je obavezan za ulogu SECURITY");
                 }
                 Building building = buildingService.findEntity(request.buildingId());
-                builder.building(building);
+                user.setBuilding(building);
             }
             case STAFF -> {
                 if (request.buildingId() == null) {
                     throw new IllegalArgumentException("buildingId je obavezan za ulogu STAFF");
                 }
                 Building building = buildingService.findEntity(request.buildingId());
-                builder.building(building).badgeCode(generateUniqueBadgeCode()).jobTitle(request.jobTitle());
+                user.setBuilding(building);
+                user.setBadgeCode(generateUniqueBadgeCode());
+                user.setJobTitle(request.jobTitle());
             }
             case ADMIN -> {
                 // nema dodatnih obaveznih polja
             }
         }
 
-        return UserMapper.toResponse(userRepository.save(builder.build()));
+        return UserMapper.toResponse(userRepository.save(user));
     }
 
     @Override

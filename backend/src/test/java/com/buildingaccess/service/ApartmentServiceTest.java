@@ -46,8 +46,13 @@ class ApartmentServiceTest {
 
     @Test
     void delete_hasResidents_throwsInvalidStatus() {
-        Apartment apartment = Apartment.builder().id(10L).number("1")
-                .residents(List.of(User.builder().id(1L).role(Role.RESIDENT).build())).build();
+        User resident = new User();
+        resident.setId(1L);
+        resident.setRole(Role.RESIDENT);
+        Apartment apartment = new Apartment();
+        apartment.setId(10L);
+        apartment.setNumber("1");
+        apartment.setResidents(List.of(resident));
         when(apartmentRepository.findById(10L)).thenReturn(Optional.of(apartment));
 
         assertThatThrownBy(() -> apartmentService.delete(10L)).isInstanceOf(InvalidStatusException.class);
@@ -56,7 +61,10 @@ class ApartmentServiceTest {
 
     @Test
     void delete_hasGatePasses_throwsInvalidStatus() {
-        Apartment apartment = Apartment.builder().id(10L).number("1").residents(new ArrayList<>()).build();
+        Apartment apartment = new Apartment();
+        apartment.setId(10L);
+        apartment.setNumber("1");
+        apartment.setResidents(new ArrayList<>());
         when(apartmentRepository.findById(10L)).thenReturn(Optional.of(apartment));
         when(gatePassRepository.existsByApartmentId(10L)).thenReturn(true);
 
@@ -65,7 +73,10 @@ class ApartmentServiceTest {
 
     @Test
     void delete_noResidentsOrPasses_deletesApartment() {
-        Apartment apartment = Apartment.builder().id(10L).number("1").residents(new ArrayList<>()).build();
+        Apartment apartment = new Apartment();
+        apartment.setId(10L);
+        apartment.setNumber("1");
+        apartment.setResidents(new ArrayList<>());
         when(apartmentRepository.findById(10L)).thenReturn(Optional.of(apartment));
         when(gatePassRepository.existsByApartmentId(10L)).thenReturn(false);
 
@@ -76,7 +87,9 @@ class ApartmentServiceTest {
 
     @Test
     void create_setsBuildingFromBuildingService() {
-        Building building = Building.builder().id(1L).name("Zgrada A").build();
+        Building building = new Building();
+        building.setId(1L);
+        building.setName("Zgrada A");
         when(buildingService.findEntity(1L)).thenReturn(building);
         when(apartmentRepository.save(any(Apartment.class))).thenAnswer(inv -> inv.getArgument(0));
 

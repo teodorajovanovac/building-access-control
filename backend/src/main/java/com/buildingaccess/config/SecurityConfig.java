@@ -3,7 +3,6 @@ package com.buildingaccess.config;
 import com.buildingaccess.exception.ApiError;
 import com.buildingaccess.security.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -28,12 +27,19 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                           UserDetailsService userDetailsService,
+                           ObjectMapper objectMapper) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.userDetailsService = userDetailsService;
+        this.objectMapper = objectMapper;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

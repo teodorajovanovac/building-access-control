@@ -7,7 +7,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,7 +20,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Building {
 
     @Id
@@ -32,7 +30,6 @@ public class Building {
 
     private String address;
 
-    @Builder.Default
     @OneToMany(mappedBy = "building")
     private List<Apartment> apartments = new ArrayList<>();
 }

@@ -56,10 +56,21 @@ class GatePassServiceTest {
     @BeforeEach
     void setUp() {
         service = new GatePassServiceImpl(gatePassRepository, historyRepository, mailService);
-        Building building = Building.builder().id(1L).name("Zgrada A").address("Adresa 1").build();
-        apartment = Apartment.builder().id(10L).number("12").floor(3).building(building).build();
-        resident = User.builder().id(50L).firstName("Stanar").lastName("Stanarić").role(Role.RESIDENT)
-                .apartment(apartment).build();
+        Building building = new Building();
+        building.setId(1L);
+        building.setName("Zgrada A");
+        building.setAddress("Adresa 1");
+        apartment = new Apartment();
+        apartment.setId(10L);
+        apartment.setNumber("12");
+        apartment.setFloor(3);
+        apartment.setBuilding(building);
+        resident = new User();
+        resident.setId(50L);
+        resident.setFirstName("Stanar");
+        resident.setLastName("Stanarić");
+        resident.setRole(Role.RESIDENT);
+        resident.setApartment(apartment);
     }
 
     private GatePassCreateRequest createRequest(LocalDateTime from, LocalDateTime to, int maxEntries) {
@@ -89,7 +100,10 @@ class GatePassServiceTest {
 
     @Test
     void create_residentWithoutApartment_throwsIllegalArgument() {
-        User residentNoApartment = User.builder().id(51L).role(Role.RESIDENT).apartment(null).build();
+        User residentNoApartment = new User();
+        residentNoApartment.setId(51L);
+        residentNoApartment.setRole(Role.RESIDENT);
+        residentNoApartment.setApartment(null);
         LocalDateTime from = LocalDateTime.now();
         LocalDateTime to = LocalDateTime.now().plusDays(1);
 
@@ -150,10 +164,19 @@ class GatePassServiceTest {
     // ---------- update (SK4) ----------
 
     private GatePass existingActiveGatePass() {
-        return GatePass.builder().id(1L).code("GP-EXIST0001").guestName("Gost")
-                .status(GatePassStatus.ACTIVE).usedEntries(1).maxEntries(5)
-                .validFrom(LocalDateTime.now().minusDays(1)).validTo(LocalDateTime.now().plusDays(1))
-                .type(GatePassType.LIMITED).createdBy(resident).apartment(apartment).build();
+        GatePass gatePass = new GatePass();
+        gatePass.setId(1L);
+        gatePass.setCode("GP-EXIST0001");
+        gatePass.setGuestName("Gost");
+        gatePass.setStatus(GatePassStatus.ACTIVE);
+        gatePass.setUsedEntries(1);
+        gatePass.setMaxEntries(5);
+        gatePass.setValidFrom(LocalDateTime.now().minusDays(1));
+        gatePass.setValidTo(LocalDateTime.now().plusDays(1));
+        gatePass.setType(GatePassType.LIMITED);
+        gatePass.setCreatedBy(resident);
+        gatePass.setApartment(apartment);
+        return gatePass;
     }
 
     private GatePassUpdateRequest updateRequest(LocalDateTime from, LocalDateTime to, int maxEntries) {
@@ -164,7 +187,9 @@ class GatePassServiceTest {
     void update_notOwner_throwsAccessDenied() {
         GatePass gatePass = existingActiveGatePass();
         when(gatePassRepository.findById(1L)).thenReturn(Optional.of(gatePass));
-        User otherResident = User.builder().id(999L).role(Role.RESIDENT).build();
+        User otherResident = new User();
+        otherResident.setId(999L);
+        otherResident.setRole(Role.RESIDENT);
 
         LocalDateTime from = LocalDateTime.now();
         LocalDateTime to = LocalDateTime.now().plusDays(1);
@@ -225,7 +250,9 @@ class GatePassServiceTest {
     void cancel_notOwner_throwsAccessDenied() {
         GatePass gatePass = existingActiveGatePass();
         when(gatePassRepository.findById(1L)).thenReturn(Optional.of(gatePass));
-        User otherResident = User.builder().id(999L).role(Role.RESIDENT).build();
+        User otherResident = new User();
+        otherResident.setId(999L);
+        otherResident.setRole(Role.RESIDENT);
 
         assertThatThrownBy(() -> service.cancel(1L, otherResident))
                 .isInstanceOf(AccessDeniedException.class);
@@ -262,7 +289,9 @@ class GatePassServiceTest {
     void getById_nonOwnerResident_throwsAccessDenied() {
         GatePass gatePass = existingActiveGatePass();
         when(gatePassRepository.findById(1L)).thenReturn(Optional.of(gatePass));
-        User otherResident = User.builder().id(999L).role(Role.RESIDENT).build();
+        User otherResident = new User();
+        otherResident.setId(999L);
+        otherResident.setRole(Role.RESIDENT);
 
         assertThatThrownBy(() -> service.getById(1L, otherResident))
                 .isInstanceOf(AccessDeniedException.class);
@@ -272,7 +301,9 @@ class GatePassServiceTest {
     void getById_securityRole_isAllowedEvenIfNotOwner() {
         GatePass gatePass = existingActiveGatePass();
         when(gatePassRepository.findById(1L)).thenReturn(Optional.of(gatePass));
-        User security = User.builder().id(999L).role(Role.SECURITY).build();
+        User security = new User();
+        security.setId(999L);
+        security.setRole(Role.SECURITY);
 
         GatePassResponse response = service.getById(1L, security);
 

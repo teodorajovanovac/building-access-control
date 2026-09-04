@@ -8,7 +8,6 @@ import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.repository.GatePassRepository;
 import com.buildingaccess.service.BuildingService;
 import com.buildingaccess.service.StatisticsService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,13 +17,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class StatisticsServiceImpl implements StatisticsService {
 
     private final BuildingService buildingService;
     private final GatePassRepository gatePassRepository;
     private final EntryLogRepository entryLogRepository;
     private final AccessDenialRepository accessDenialRepository;
+
+    public StatisticsServiceImpl(BuildingService buildingService,
+                                  GatePassRepository gatePassRepository,
+                                  EntryLogRepository entryLogRepository,
+                                  AccessDenialRepository accessDenialRepository) {
+        this.buildingService = buildingService;
+        this.gatePassRepository = gatePassRepository;
+        this.entryLogRepository = entryLogRepository;
+        this.accessDenialRepository = accessDenialRepository;
+    }
 
     /** SK18 — statistika posećenosti po zgradi i vremenskom periodu. */
     @Override

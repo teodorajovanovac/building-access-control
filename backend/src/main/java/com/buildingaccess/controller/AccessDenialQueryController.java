@@ -7,7 +7,6 @@ import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.service.AccessDenialService;
 import com.buildingaccess.util.CsvUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,12 +28,15 @@ import java.util.List;
 /** SK12 dnevni odbijeni pokušaji, SK17 pretraga/filtriranje/sortiranje/paginacija. */
 @RestController
 @RequestMapping("/api/query/denials")
-@RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN','SECURITY')")
 @Tag(name = "Access Denials (query)", description = "SK12 Dnevni odbijeni pokušaji, SK17 Pretraga/filtriranje/sortiranje/paginacija")
 public class AccessDenialQueryController {
 
     private final AccessDenialService accessDenialService;
+
+    public AccessDenialQueryController(AccessDenialService accessDenialService) {
+        this.accessDenialService = accessDenialService;
+    }
 
     @GetMapping("/today")
     public List<AccessDenialResponse> today(@RequestParam(required = false) Long buildingId,

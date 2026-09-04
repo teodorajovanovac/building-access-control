@@ -7,7 +7,6 @@ import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.service.EntryLogService;
 import com.buildingaccess.util.CsvUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -32,12 +31,15 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/query/entrylogs")
-@RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN','SECURITY')")
 @Tag(name = "Entry Logs (query)", description = "SK12 Dnevna evidencija, SK17 Pretraga/filtriranje/sortiranje/paginacija")
 public class EntryLogQueryController {
 
     private final EntryLogService entryLogService;
+
+    public EntryLogQueryController(EntryLogService entryLogService) {
+        this.entryLogService = entryLogService;
+    }
 
     @GetMapping("/today")
     public List<EntryLogResponse> today(@RequestParam(required = false) Long buildingId,

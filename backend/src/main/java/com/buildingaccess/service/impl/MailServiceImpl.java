@@ -1,7 +1,6 @@
 package com.buildingaccess.service.impl;
 
 import com.buildingaccess.service.MailService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -19,7 +18,6 @@ import java.time.format.DateTimeFormatter;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy. HH:mm");
@@ -31,6 +29,10 @@ public class MailServiceImpl implements MailService {
 
     @Value("${app.public-url:http://localhost:5173}")
     private String publicUrl;
+
+    public MailServiceImpl(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     @Override
     public void sendGatePassUsedNotification(String toEmail, String residentFirstName, String guestName,

@@ -9,7 +9,6 @@ import com.buildingaccess.model.User;
 import com.buildingaccess.service.GatePassService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,11 +26,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/resident/gatepasses")
-@RequiredArgsConstructor
 @Tag(name = "Gate Passes (Resident)", description = "SK3-SK6 Kreiranje/izmena/otkazivanje/pregled propusnica")
 public class GatePassController {
 
     private final GatePassService gatePassService;
+
+    public GatePassController(GatePassService gatePassService) {
+        this.gatePassService = gatePassService;
+    }
 
     @GetMapping
     public PageResponse<GatePassResponse> getMine(@AuthenticationPrincipal User currentUser, Pageable pageable) {

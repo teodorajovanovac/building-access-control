@@ -11,7 +11,6 @@ import com.buildingaccess.repository.ApartmentRepository;
 import com.buildingaccess.repository.GatePassRepository;
 import com.buildingaccess.service.ApartmentService;
 import com.buildingaccess.service.BuildingService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,12 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ApartmentServiceImpl implements ApartmentService {
 
     private final ApartmentRepository apartmentRepository;
     private final GatePassRepository gatePassRepository;
     private final BuildingService buildingService;
+
+    public ApartmentServiceImpl(ApartmentRepository apartmentRepository,
+                                 GatePassRepository gatePassRepository,
+                                 BuildingService buildingService) {
+        this.apartmentRepository = apartmentRepository;
+        this.gatePassRepository = gatePassRepository;
+        this.buildingService = buildingService;
+    }
 
     /** Puna (nepaginirana) lista — koristi je forma za registraciju stanara (SK2), gde je potreban ceo izbor. */
     @Override
@@ -54,11 +60,10 @@ public class ApartmentServiceImpl implements ApartmentService {
     @Transactional
     public ApartmentResponse create(ApartmentRequest request) {
         Building building = buildingService.findEntity(request.buildingId());
-        Apartment apartment = Apartment.builder()
-                .number(request.number())
-                .floor(request.floor())
-                .building(building)
-                .build();
+        Apartment apartment = new Apartment();
+        apartment.setNumber(request.number());
+        apartment.setFloor(request.floor());
+        apartment.setBuilding(building);
         return ApartmentMapper.toResponse(apartmentRepository.save(apartment));
     }
 
