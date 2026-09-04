@@ -2,22 +2,18 @@ package com.buildingaccess.service.impl;
 
 import com.buildingaccess.dto.entrylog.EntryLogResponse;
 import com.buildingaccess.mapper.EntryLogMapper;
-import com.buildingaccess.model.EntryLog;
 import com.buildingaccess.model.enums.PersonType;
 import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.service.EntryLogService;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -51,42 +47,30 @@ public class EntryLogServiceImpl implements EntryLogService {
                 .toList();
     }
 
-    /** SK17 — pretraga/filtriranje/sortiranje/paginacija. */
+    /**
+     * SK17 — pretraga/filtriranje/sortiranje/paginacija. personType stiže kao String iz kontrolera
+     * (query parametar), pa ga ovde pretvaramo u enum pre prosleđivanja repozitorijumu.
+     */
     @Override
     public Page<EntryLogResponse> search(Long buildingId, String personType, LocalDateTime from, LocalDateTime to,
                                           String text, Pageable pageable) {
-        Specification<EntryLog> spec = buildSpecification(buildingId, personType, from, to, text);
-        return entryLogRepository.findAll(spec, pageable).map(EntryLogMapper::toResponse);
+        return entryLogRepository.search(buildingId, toPersonType(personType), from, to, blankToNull(text), pageable)
+                .map(EntryLogMapper::toResponse);
     }
 
     /** Isti filteri kao search, ali bez paginacije — za CSV izvoz kompletnog rezultata pretrage. */
     @Override
     public List<EntryLogResponse> export(Long buildingId, String personType, LocalDateTime from, LocalDateTime to,
                                           String text, Sort sort) {
-        Specification<EntryLog> spec = buildSpecification(buildingId, personType, from, to, text);
-        return entryLogRepository.findAll(spec, sort).stream().map(EntryLogMapper::toResponse).toList();
+        return entryLogRepository.search(buildingId, toPersonType(personType), from, to, blankToNull(text), sort)
+                .stream().map(EntryLogMapper::toResponse).toList();
     }
 
-    private Specification<EntryLog> buildSpecification(Long buildingId, String personType, LocalDateTime from,
-                                                         LocalDateTime to, String text) {
-        return (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (buildingId != null) {
-                predicates.add(cb.equal(root.get("building").get("id"), buildingId));
-            }
-            if (personType != null && !personType.isBlank()) {
-                predicates.add(cb.equal(root.get("personType"), PersonType.valueOf(personType)));
-            }
-            if (from != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("entryTime"), from));
-            }
-            if (to != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("entryTime"), to));
-            }
-            if (text != null && !text.isBlank()) {
-                predicates.add(cb.like(cb.lower(root.get("personName")), "%" + text.toLowerCase() + "%"));
-            }
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
+    private PersonType toPersonType(String personType) {
+        return (personType == null || personType.isBlank()) ? null : PersonType.valueOf(personType);
+    }
+
+    private String blankToNull(String text) {
+        return (text == null || text.isBlank()) ? null : text;
     }
 }

@@ -18,18 +18,15 @@ import com.buildingaccess.repository.PassStatusHistoryRepository;
 import com.buildingaccess.service.GatePassService;
 import com.buildingaccess.service.MailService;
 import com.buildingaccess.util.CodeGeneratorUtil;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -68,50 +65,28 @@ public class GatePassServiceImpl implements GatePassService {
         return GatePassMapper.toPublicResponse(gatePass);
     }
 
-    /** SK17 — pretraga/filtriranje/sortiranje/paginacija (admin). */
+    /**
+     * SK17 — pretraga/filtriranje/sortiranje/paginacija (admin). Filtriranje samo prosleđuje
+     * parametre repozitorijumu (v. GatePassRepository.search) — prazan tekst se pretvara u null
+     * da JPQL "is null" provera radi i za prazan string, ne samo za pravi null.
+     */
     @Override
     public Page<GatePassResponse> search(Long buildingId, Long apartmentId, GatePassStatus status,
                                           LocalDateTime from, LocalDateTime to, String text, Pageable pageable) {
-        Specification<GatePass> spec = buildSpecification(buildingId, apartmentId, status, from, to, text);
-        return gatePassRepository.findAll(spec, pageable).map(GatePassMapper::toResponse);
+        return gatePassRepository.search(buildingId, apartmentId, status, from, to, blankToNull(text), pageable)
+                .map(GatePassMapper::toResponse);
     }
 
     /** Isti filteri kao search, ali bez paginacije — za CSV izvoz kompletnog rezultata pretrage. */
     @Override
     public List<GatePassResponse> export(Long buildingId, Long apartmentId, GatePassStatus status,
                                           LocalDateTime from, LocalDateTime to, String text, Sort sort) {
-        Specification<GatePass> spec = buildSpecification(buildingId, apartmentId, status, from, to, text);
-        return gatePassRepository.findAll(spec, sort).stream().map(GatePassMapper::toResponse).toList();
+        return gatePassRepository.search(buildingId, apartmentId, status, from, to, blankToNull(text), sort)
+                .stream().map(GatePassMapper::toResponse).toList();
     }
 
-    private Specification<GatePass> buildSpecification(Long buildingId, Long apartmentId, GatePassStatus status,
-                                                         LocalDateTime from, LocalDateTime to, String text) {
-        return (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (buildingId != null) {
-                predicates.add(cb.equal(root.get("apartment").get("building").get("id"), buildingId));
-            }
-            if (apartmentId != null) {
-                predicates.add(cb.equal(root.get("apartment").get("id"), apartmentId));
-            }
-            if (status != null) {
-                predicates.add(cb.equal(root.get("status"), status));
-            }
-            if (from != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), from));
-            }
-            if (to != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), to));
-            }
-            if (text != null && !text.isBlank()) {
-                String like = "%" + text.toLowerCase() + "%";
-                predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("guestName")), like),
-                        cb.like(cb.lower(root.get("code")), like)
-                ));
-            }
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
+    private String blankToNull(String text) {
+        return (text == null || text.isBlank()) ? null : text;
     }
 
     private GatePass findEntity(Long id) {
