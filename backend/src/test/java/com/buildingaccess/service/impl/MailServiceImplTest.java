@@ -18,11 +18,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-/**
- * Unit testovi za MailServiceImpl: kad mejl nije konfigurisan (spring.mail.username prazan),
- * slanje se tiho preskače; kad jeste konfigurisan, šalje se plain-text poruka; a ako samo slanje
- * pukne, greška se guta (nikad se ne baca dalje ka pozivaocu).
- */
+/** Unit testovi za MailServiceImpl: nekonfigurisan mejl se tiho preskače, greška pri slanju se guta. */
 @ExtendWith(MockitoExtension.class)
 class MailServiceImplTest {
 
@@ -38,7 +34,6 @@ class MailServiceImplTest {
 
     @Test
     void sendGatePassUsedNotification_usernameNotConfigured_neverCallsMailSender() {
-        // mailUsername polje je podrazumevano prazno (kao u application.yml: spring.mail.username: ${MAIL_USERNAME:})
         ReflectionTestUtils.setField(mailService, "mailUsername", "");
 
         mailService.sendGatePassUsedNotification(

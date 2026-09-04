@@ -71,11 +71,7 @@ public class GatePassServiceImpl implements GatePassService {
         return GatePassMapper.toPublicResponse(gatePass);
     }
 
-    /**
-     * SK17 — pretraga/filtriranje/sortiranje/paginacija (admin). Filtriranje samo prosleđuje
-     * parametre repozitorijumu (v. GatePassRepository.search) — prazan tekst se pretvara u null
-     * da JPQL "is null" provera radi i za prazan string, ne samo za pravi null.
-     */
+    /** Prazan tekst se pretvara u null da JPQL "is null" provera radi i za prazan string. */
     @Override
     public Page<GatePassResponse> search(Long buildingId, Long apartmentId, GatePassStatus status,
                                           LocalDateTime from, LocalDateTime to, String text, Pageable pageable) {

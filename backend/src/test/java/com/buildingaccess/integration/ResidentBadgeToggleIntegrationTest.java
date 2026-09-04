@@ -28,10 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Integracioni test za SK9: skeniranje ličnog bedža stanara dva puta uzastopno preko HTTP-a
- * — prvi put treba da evidentira ulazak, drugi put izlazak (automatsko naizmenično evidentiranje).
- */
+/** Integracioni test: dva uzastopna skeniranja bedža stanara — prvo ulazak, drugo izlazak. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")

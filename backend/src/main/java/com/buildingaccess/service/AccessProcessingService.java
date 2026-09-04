@@ -8,11 +8,7 @@ import com.buildingaccess.model.enums.PersonType;
 
 import java.util.List;
 
-/**
- * Srce aplikacije (SK8-SK11): jedan scan endpoint za obezbeđenje prepoznaje da li je uneti/skenirani
- * kod propusnica gosta, lični bedž stanara ili bedž osoblja, i primenjuje odgovarajuću logiku —
- * uključujući automatsko naizmenično evidentiranje ulaska/izlaska za stanara i osoblje.
- */
+/** Jedan scan endpoint za obezbeđenje: prepoznaje kod i primenjuje odgovarajuću logiku ulaska. */
 public interface AccessProcessingService {
 
     ScanResultResponse processScan(String code, User security);

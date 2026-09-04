@@ -33,14 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Integracioni test celog HTTP toka (kontroler -> servis -> repo -> H2) za SK2/SK3/SK8:
- * registracija stanara -> prijava -> kreiranje propusnice za gosta -> obrada dolaska gosta
- * od strane obezbeđenja -> provera da je ulazak odobren i usedEntries uvećan.
- *
- * Admin nalog (admin@buildingaccess.com / admin123) kreira DataSeeder pri podizanju konteksta
- * (jedini način da se kroz API napravi zgrada/stan/obezbeđenje bez postojećeg admina).
- */
+/** Integracioni test celog toka: registracija -> prijava -> propusnica za gosta -> obrada dolaska -> provera ulaska. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")

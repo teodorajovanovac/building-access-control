@@ -41,11 +41,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * Unit testovi za srce aplikacije (SK8-SK11): AccessProcessingService.processScan prepoznaje
- * propusnicu / lični bedž stanara / bedž osoblja i primenjuje odgovarajuću poslovnu logiku.
- * Svi repozitorijumi i GatePassService su mokovani — nema Spring konteksta, nema baze.
- */
+/** Unit testovi za AccessProcessingService.processScan — svi repozitorijumi i servisi su mokovani. */
 @ExtendWith(MockitoExtension.class)
 class AccessProcessingServiceTest {
 
@@ -91,10 +87,7 @@ class AccessProcessingServiceTest {
         security.setRole(Role.SECURITY);
         security.setBuilding(building);
 
-        // changeStatus u pravoj implementaciji menja status na propusnici i beleži istoriju;
-        // simuliramo isto ponašanje da bismo mogli da proverimo posledičnu (approvable) logiku.
-        // lenient() jer je ovaj stub relevantan samo za testove koji zaista prolaze kroz granu
-        // propusnice (processGatePass) — ostali (bedž stanara/osoblja, ručni slučajevi) ga ne koriste.
+        // Simulira changeStatus (menja status propusnice); lenient jer ga ne koriste svi testovi.
         lenient().doAnswer(invocation -> {
             GatePass gp = invocation.getArgument(0);
             GatePassStatus newStatus = invocation.getArgument(1);
@@ -136,7 +129,6 @@ class AccessProcessingServiceTest {
 
     @Test
     void processScan_gatePassReachesMaxEntriesOnThisScan_transitionsToUsedUp() {
-        // usedEntries == maxEntries - 1: ovaj scan ga dovodi tačno do limita.
         GatePass gatePass = activeGatePass(1, 2, LocalDateTime.now().plusDays(1));
         when(gatePassRepository.findByCode("GP-TEST1234")).thenReturn(Optional.of(gatePass));
 
@@ -149,8 +141,7 @@ class AccessProcessingServiceTest {
 
     @Test
     void processScan_gatePassExactlyAtValidTo_isNotYetExpired() {
-        // "now.isAfter(validTo)" — kada je validTo tačno sada (ili tek prošlo), granica je bitna.
-        // Koristimo validTo malo u budućnosti da izbegnemo flaky test zbog stvarnog vremena izvršavanja.
+        // validTo malo u budućnosti da izbegnemo flaky test zbog vremena izvršavanja.
         GatePass gatePass = activeGatePass(0, 1, LocalDateTime.now().plusNanos(500_000_000));
         when(gatePassRepository.findByCode("GP-TEST1234")).thenReturn(Optional.of(gatePass));
 
@@ -209,8 +200,7 @@ class AccessProcessingServiceTest {
 
     @Test
     void processScan_activeGatePassButAlreadyAtLimit_deniedAsUsedUp() {
-        // Redak konkurentni slučaj iz komentara u servisu: status je i dalje ACTIVE,
-        // ali je usedEntries >= maxEntries (npr. dva simultana skeniranja).
+        // Redak slučaj: status je i dalje ACTIVE, ali je usedEntries >= maxEntries.
         GatePass gatePass = activeGatePass(2, 2, LocalDateTime.now().plusDays(1));
         when(gatePassRepository.findByCode("GP-TEST1234")).thenReturn(Optional.of(gatePass));
 

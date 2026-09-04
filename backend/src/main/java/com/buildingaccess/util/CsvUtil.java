@@ -2,12 +2,7 @@ package com.buildingaccess.util;
 
 import java.util.List;
 
-/**
- * Prost CSV izvoz (bez spoljne biblioteke) - BOM na pocetku da Excel ispravno prikaze c/c/s/z/dj.
- * Separator je ';' (ne ',') jer Excel na srpskim/evropskim regionalnim podesavanjima koristi zarez
- * kao decimalni separator, pa mu je podrazumevani CSV list-separator tacka-zarez - sa obicnim
- * zarezom bi ceo red upao u jednu kolonu pri otvaranju dupli-klikom.
- */
+/** BOM za ispravan prikaz č/ć/š/ž/đ, separator ';' jer Excel na srpskim podešavanjima ne prepoznaje zarez. */
 public final class CsvUtil {
 
     private static final char BOM = '\uFEFF';

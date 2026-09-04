@@ -14,11 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * Javno dostupni podaci bez prijave: stranica propusnice (deljenje gostu), i lista
- * zgrada/stanova — potrebna stanaru da izabere svoj stan na formi registracije (SK2),
- * pošto pre registracije još nema token za /api/admin/**.
- */
+/** Javno dostupni podaci bez prijave: stranica propusnice i lista zgrada/stanova za registraciju. */
 @RestController
 @RequestMapping("/api/public")
 @Tag(name = "Public", description = "Javna stranica propusnice i lista zgrada/stanova za registraciju (bez prijave)")

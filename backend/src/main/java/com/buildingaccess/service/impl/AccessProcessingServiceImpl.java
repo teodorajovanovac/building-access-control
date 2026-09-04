@@ -29,11 +29,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-/**
- * Srce aplikacije (SK8-SK11): jedan scan endpoint za obezbeđenje prepoznaje da li je uneti/skenirani
- * kod propusnica gosta, lični bedž stanara ili bedž osoblja, i primenjuje odgovarajuću logiku —
- * uključujući automatsko naizmenično evidentiranje ulaska/izlaska za stanara i osoblje.
- */
+/** Prepoznaje da li je skenirani kod propusnica gosta, bedž stanara ili osoblja i primenjuje odgovarajuću logiku. */
 @Service
 public class AccessProcessingServiceImpl implements AccessProcessingService {
 
@@ -216,11 +212,7 @@ public class AccessProcessingServiceImpl implements AccessProcessingService {
                 PersonType.GUEST, gatePass.getGuestName(), gatePass.getCode(), null, null);
     }
 
-    /**
-     * SK-poželjno: obaveštava stanara mejlom da je njegov gost upravo ušao (posle upisa EntryLog-a).
-     * "Fire and forget" efekat — MailService sam apsorbuje sve greške (nekonfigurisan mejl, mrežni
-     * problem itd.) i nikad ne baca izuzetak, tako da ovo ne sme uticati na povratni rezultat skeniranja.
-     */
+    /** Obaveštava stanara mejlom da je gost ušao — MailService sam guta greške, ne sme da sruši scan. */
     private void notifyResidentGatePassUsed(GatePass gatePass, LocalDateTime entryTime) {
         User resident = gatePass.getCreatedBy();
         if (resident == null || resident.getEmail() == null || resident.getEmail().isBlank()) {

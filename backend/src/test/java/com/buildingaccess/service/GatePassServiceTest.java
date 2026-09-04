@@ -34,10 +34,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * Unit testovi za GatePassService: kreiranje propusnice, status-guard na izmenu/otkazivanje
- * (SK4/SK5 — dozvoljeno samo dok je ACTIVE) i pristup podacima (vlasnik ili "elevated" uloga).
- */
+/** Unit testovi za GatePassService: kreiranje, status-guard na izmenu/otkazivanje, pristup podacima. */
 @ExtendWith(MockitoExtension.class)
 class GatePassServiceTest {
 

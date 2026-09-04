@@ -67,7 +67,7 @@ public class GatePass {
     @JoinColumn(name = "created_by_id", nullable = false)
     private User createdBy;
 
-    /** Denormalizovano iz createdBy.apartment u trenutku kreiranja (v. plan, SK7 upit). */
+    /** Denormalizovano iz createdBy.apartment pri kreiranju (SK7 upit). */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "apartment_id", nullable = false)
     private Apartment apartment;

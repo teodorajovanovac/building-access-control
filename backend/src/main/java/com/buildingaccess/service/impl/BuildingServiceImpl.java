@@ -98,9 +98,7 @@ public class BuildingServiceImpl implements BuildingService {
             throw new InvalidStatusException("Zgrada ima evidenciju ulazaka ili odbijenih pokušaja — ne može se obrisati.");
         }
 
-        // Stan ne postoji bez zgrade (apartments.building_id je NOT NULL) — pošto veza više nije
-        // kaskadna na nivou JPA (v. konceptualni model: obična asocijacija, ne kompozicija),
-        // prazne stanove eksplicitno brišemo ovde pre brisanja zgrade.
+        // Veza nije kaskadna na nivou JPA, pa stanove brišemo eksplicitno pre zgrade.
         apartmentRepository.deleteAll(building.getApartments());
         buildingRepository.delete(building);
     }

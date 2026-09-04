@@ -49,10 +49,7 @@ public class EntryLogServiceImpl implements EntryLogService {
                 .toList();
     }
 
-    /**
-     * SK17 — pretraga/filtriranje/sortiranje/paginacija. personType stiže kao String iz kontrolera
-     * (query parametar), pa ga ovde pretvaramo u enum pre prosleđivanja repozitorijumu.
-     */
+    /** personType stiže kao String iz kontrolera, pretvara se u enum pre prosleđivanja repozitorijumu. */
     @Override
     public Page<EntryLogResponse> search(Long buildingId, String personType, LocalDateTime from, LocalDateTime to,
                                           String text, Pageable pageable) {

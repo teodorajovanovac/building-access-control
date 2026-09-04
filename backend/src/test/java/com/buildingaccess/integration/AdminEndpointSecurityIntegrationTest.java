@@ -20,10 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Integracioni test JWT autentikacije/autorizacije: pristup /api/admin/** mora biti odbijen
- * bez tokena (401) i sa pogrešnom ulogom (403) — SecurityConfig.hasRole("ADMIN").
- */
+/** Integracioni test: pristup /api/admin/** mora biti odbijen bez tokena (401) i sa pogrešnom ulogom (403). */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -120,7 +117,6 @@ class AdminEndpointSecurityIntegrationTest {
 
         String securityToken = login("security-authz-test@example.com", "lozinka1");
 
-        // /api/resident/** zahteva ROLE_RESIDENT — obezbeđenje ne sme da pristupi.
         mockMvc.perform(get("/api/resident/gatepasses")
                         .header("Authorization", "Bearer " + securityToken))
                 .andExpect(status().isForbidden());

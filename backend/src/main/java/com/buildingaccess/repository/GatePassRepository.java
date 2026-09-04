@@ -25,10 +25,7 @@ public interface GatePassRepository extends JpaRepository<GatePass, Long> {
 
     long countByApartmentBuildingIdAndCreatedAtBetween(Long buildingId, LocalDateTime from, LocalDateTime to);
 
-    /**
-     * SK17 pretraga — svi parametri sem pageable/sort su opcioni (null = "ne filtriraj po ovome"),
-     * otud trik ":param IS NULL OR ..." za svaki filter.
-     */
+    /** Svi parametri sem pageable/sort su opcioni (null = "ne filtriraj po ovome"). */
     String SEARCH_JPQL = """
             select g from GatePass g
             where (:buildingId is null or g.apartment.building.id = :buildingId)

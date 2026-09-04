@@ -6,11 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * Admin kreira korisnike bilo koje uloge (SK15).
- * apartmentId je obavezan samo za RESIDENT, buildingId za SECURITY i STAFF (proverava se u service sloju).
- * jobTitle je opcioni i koristi se samo za STAFF.
- */
+/** apartmentId obavezan samo za RESIDENT, buildingId za SECURITY/STAFF, jobTitle opcion samo za STAFF. */
 public record UserCreateRequest(
         @NotBlank String firstName,
         @NotBlank String lastName,

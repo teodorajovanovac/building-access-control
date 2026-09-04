@@ -10,13 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Stanareva sopstvena stranica sa ličnim bedž kodom i QR-om (SK2) — bez ovoga stanar
- * nema način da vidi svoj badgeCode/QR nakon registracije osim preko admina.
- * Korisnik se svežе učitava preko servisa (a ne direktno iz @AuthenticationPrincipal)
- * jer je principal objekat iz JWT filtera van Hibernate sesije kontrolera — lazy
- * apartment/building bi pukli sa "no Session".
- */
+/** Korisnik se svežе učitava preko servisa jer je principal van Hibernate sesije — lazy polja bi pukla. */
 @RestController
 @RequestMapping("/api/resident/me")
 @PreAuthorize("hasRole('RESIDENT')")

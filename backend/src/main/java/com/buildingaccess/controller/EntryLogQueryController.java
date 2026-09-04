@@ -25,10 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Deljeni upiti nad evidencijom ulazaka — SK12 (dnevna evidencija obezbeđenja) i SK17
- * (pretraga/filtriranje/sortiranje/paginacija za admina i obezbeđenje).
- */
+/** Upiti nad evidencijom ulazaka: dnevna evidencija i pretraga/filtriranje za admina i obezbeđenje. */
 @RestController
 @RequestMapping("/api/query/entrylogs")
 @PreAuthorize("hasAnyRole('ADMIN','SECURITY')")

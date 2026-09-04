@@ -10,13 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
-/**
- * Pravi početni ADMIN nalog ako u bazi još ne postoji nijedan — bez ovoga nema
- * načina da se kroz API napravi prvi admin (registracija pravi samo RESIDENT,
- * a admin CRUD nad korisnicima zahteva već postojećeg admina).
- * Namenjeno razvojnom/školskom okruženju — lozinku promeniti pre bilo kakvog
- * javnog deploya.
- */
+/** Pravi početni ADMIN nalog ako u bazi još ne postoji nijedan — inače nema načina da se napravi prvi admin. */
 @Component
 @Slf4j
 public class DataSeeder implements CommandLineRunner {

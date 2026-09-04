@@ -10,12 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Najjednostavnija moguća implementacija (plain text, bez priloga) — SK-poželjno obaveštenje
- * stanaru kada se njegova propusnica iskoristi. Namerno "best effort": ako mejl nije podešen
- * (spring.mail.username prazan, npr. dok korisnica ne unese svoj Gmail App Password) ili ako
- * slanje ikad pukne, ovo NIKAD ne sme da uspori ili sruši scan endpoint — samo se loguje.
- */
+/** Best effort: ako mejl nije podešen ili slanje pukne, samo se loguje — nikad ne sme da sruši scan. */
 @Slf4j
 @Service
 public class MailServiceImpl implements MailService {

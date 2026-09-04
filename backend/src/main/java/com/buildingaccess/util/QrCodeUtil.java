@@ -10,11 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 
-/**
- * Generiše QR kod on-the-fly iz trajnog stringa (badgeCode / gate pass code).
- * Nema čuvanja slike u bazi — isti ulazni string uvek daje identičnu QR sliku,
- * pa je ovo dovoljno za "trajni" QR kod stanara/osoblja/propusnice.
- */
+/** Generiše QR kod on-the-fly, bez čuvanja slike u bazi — isti string uvek daje istu QR sliku. */
 public final class QrCodeUtil {
 
     private static final int SIZE = 300;

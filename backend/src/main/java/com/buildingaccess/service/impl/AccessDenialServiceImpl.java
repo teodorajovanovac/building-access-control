@@ -33,10 +33,7 @@ public class AccessDenialServiceImpl implements AccessDenialService {
                 .stream().map(AccessDenialMapper::toResponse).toList();
     }
 
-    /**
-     * SK17 — pretraga/filtriranje/sortiranje/paginacija. reasonType stiže kao String iz kontrolera
-     * (query parametar), pa ga ovde pretvaramo u enum pre prosleđivanja repozitorijumu.
-     */
+    /** reasonType stiže kao String iz kontrolera, pretvara se u enum pre prosleđivanja repozitorijumu. */
     @Override
     public Page<AccessDenialResponse> search(Long buildingId, String reasonType, LocalDateTime from, LocalDateTime to,
                                               String text, Pageable pageable) {
