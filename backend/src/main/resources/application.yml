@@ -42,6 +42,8 @@ app:
     # DEV DEFAULT — mora se promeniti (env var JWT_SECRET) pre bilo kakvog javnog/produkcionog deploya.
     secret: ${JWT_SECRET:dev-only-secret-key-change-me-before-production-32bytes-min}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  # Bazni URL frontend-a — koristi se za link ka javnoj stranici propusnice u mejlu gostu.
+  public-url: ${APP_PUBLIC_URL:http://localhost:5173}
 
 springdoc:
   swagger-ui:

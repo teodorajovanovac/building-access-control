@@ -29,24 +29,57 @@ public class MailServiceImpl implements MailService {
     @Value("${spring.mail.username:}")
     private String mailUsername;
 
+    @Value("${app.public-url:http://localhost:5173}")
+    private String publicUrl;
+
     @Override
     public void sendGatePassUsedNotification(String toEmail, String residentFirstName, String guestName,
                                               String reason, LocalDateTime entryTime) {
-        if (mailUsername == null || mailUsername.isBlank()) {
-            log.info("Mejl nije konfigurisan (spring.mail.username prazan) — obaveštenje za {} preskočeno.", toEmail);
+        if (!isConfigured(toEmail)) {
             return;
         }
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Vaš gost je ušao u zgradu");
+        message.setText("Poštovani " + residentFirstName + ",\n\nVaš gost " + guestName
+                + " je upravo ušao u zgradu koristeći propusnicu (" + reason + "), u "
+                + entryTime.format(TIME_FORMAT) + ".");
+        send(message, toEmail);
+    }
 
+    @Override
+    public void sendGatePassToGuest(String toEmail, String guestName, String code, String reason,
+                                     LocalDateTime validFrom, LocalDateTime validTo) {
+        if (!isConfigured(toEmail)) {
+            return;
+        }
+        String link = publicUrl + "/pass/" + code;
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Vaša propusnica za ulazak u zgradu");
+        message.setText("Poštovani/a " + guestName + ",\n\nDobili ste propusnicu za ulazak u zgradu.\n\n"
+                + "Kod propusnice: " + code + "\n"
+                + "Razlog: " + reason + "\n"
+                + "Važi od: " + validFrom.format(TIME_FORMAT) + "\n"
+                + "Važi do: " + validTo.format(TIME_FORMAT) + "\n\n"
+                + "Detalje možete videti i ovde: " + link + "\n\n"
+                + "Ovaj kod pokažite obezbeđenju pri dolasku.");
+        send(message, toEmail);
+    }
+
+    private boolean isConfigured(String toEmail) {
+        if (mailUsername == null || mailUsername.isBlank()) {
+            log.info("Mejl nije konfigurisan (spring.mail.username prazan) — poruka za {} preskočena.", toEmail);
+            return false;
+        }
+        return true;
+    }
+
+    private void send(SimpleMailMessage message, String toEmail) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(toEmail);
-            message.setSubject("Vaš gost je ušao u zgradu");
-            message.setText("Poštovani " + residentFirstName + ",\n\nVaš gost " + guestName
-                    + " je upravo ušao u zgradu koristeći propusnicu (" + reason + "), u "
-                    + entryTime.format(TIME_FORMAT) + ".");
             mailSender.send(message);
         } catch (Exception ex) {
-            log.warn("Slanje mejl obaveštenja korisniku {} nije uspelo: {}", toEmail, ex.getMessage());
+            log.warn("Slanje mejla korisniku {} nije uspelo: {}", toEmail, ex.getMessage());
         }
     }
 }

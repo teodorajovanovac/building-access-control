@@ -45,6 +45,8 @@ class GatePassServiceTest {
     private GatePassRepository gatePassRepository;
     @Mock
     private PassStatusHistoryRepository historyRepository;
+    @Mock
+    private MailService mailService;
 
     private GatePassService service;
 
@@ -53,7 +55,7 @@ class GatePassServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new GatePassServiceImpl(gatePassRepository, historyRepository);
+        service = new GatePassServiceImpl(gatePassRepository, historyRepository, mailService);
         Building building = Building.builder().id(1L).name("Zgrada A").address("Adresa 1").build();
         apartment = Apartment.builder().id(10L).number("12").floor(3).building(building).build();
         resident = User.builder().id(50L).firstName("Stanar").lastName("Stanarić").role(Role.RESIDENT)
@@ -117,6 +119,32 @@ class GatePassServiceTest {
         ArgumentCaptor<GatePass> captor = ArgumentCaptor.forClass(GatePass.class);
         verify(gatePassRepository).save(captor.capture());
         assertThat(captor.getValue().getCreatedBy()).isEqualTo(resident);
+    }
+
+    @Test
+    void create_guestEmailProvided_sendsGuestNotification() {
+        when(gatePassRepository.findByCode(anyString())).thenReturn(Optional.empty());
+        when(gatePassRepository.save(any(GatePass.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        LocalDateTime from = LocalDateTime.now();
+        LocalDateTime to = LocalDateTime.now().plusDays(1);
+        service.create(createRequest(from, to, 1), resident); // createRequest fills guestEmail
+
+        verify(mailService).sendGatePassToGuest(
+                anyString(), anyString(), anyString(), anyString(), any(LocalDateTime.class), any(LocalDateTime.class));
+    }
+
+    @Test
+    void create_noGuestEmail_doesNotSendGuestNotification() {
+        when(gatePassRepository.findByCode(anyString())).thenReturn(Optional.empty());
+        when(gatePassRepository.save(any(GatePass.class))).thenAnswer(inv -> inv.getArgument(0));
+        GatePassCreateRequest requestNoEmail = new GatePassCreateRequest(
+                "Gost", "0601234567", null, "Poseta", LocalDateTime.now(), LocalDateTime.now().plusDays(1), 1, GatePassType.LIMITED);
+
+        service.create(requestNoEmail, resident);
+
+        verify(mailService, never()).sendGatePassToGuest(
+                anyString(), anyString(), anyString(), anyString(), any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
     // ---------- update (SK4) ----------

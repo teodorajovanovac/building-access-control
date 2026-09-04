@@ -11,4 +11,11 @@ public interface MailService {
      */
     void sendGatePassUsedNotification(String toEmail, String residentFirstName, String guestName,
                                        String reason, LocalDateTime entryTime);
+
+    /**
+     * Šalje gostu kod propusnice i link ka javnoj stranici (bez prijave) čim je stanar napravi —
+     * samo ako je stanar uneo guestEmail. "Fire and forget", isto kao gornja metoda.
+     */
+    void sendGatePassToGuest(String toEmail, String guestName, String code, String reason,
+                              LocalDateTime validFrom, LocalDateTime validTo);
 }

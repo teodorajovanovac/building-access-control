@@ -16,6 +16,7 @@ import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.repository.GatePassRepository;
 import com.buildingaccess.repository.PassStatusHistoryRepository;
 import com.buildingaccess.service.GatePassService;
+import com.buildingaccess.service.MailService;
 import com.buildingaccess.util.CodeGeneratorUtil;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class GatePassServiceImpl implements GatePassService {
 
     private final GatePassRepository gatePassRepository;
     private final PassStatusHistoryRepository historyRepository;
+    private final MailService mailService;
 
     @Override
     public Page<GatePassResponse> getMine(User resident, Pageable pageable) {
@@ -142,7 +144,14 @@ public class GatePassServiceImpl implements GatePassService {
                 .apartment(resident.getApartment())
                 .build();
 
-        return GatePassMapper.toResponse(gatePassRepository.save(gatePass));
+        GatePass saved = gatePassRepository.save(gatePass);
+
+        if (saved.getGuestEmail() != null && !saved.getGuestEmail().isBlank()) {
+            mailService.sendGatePassToGuest(saved.getGuestEmail(), saved.getGuestName(), saved.getCode(),
+                    saved.getReason(), saved.getValidFrom(), saved.getValidTo());
+        }
+
+        return GatePassMapper.toResponse(saved);
     }
 
     @Override
