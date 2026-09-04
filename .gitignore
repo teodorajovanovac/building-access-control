@@ -18,6 +18,7 @@ frontend/build/
 .env.local
 application-local.yml
 application-local.properties
+backend/config/
 
 # OS
 .DS_Store
