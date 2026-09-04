@@ -19,6 +19,7 @@ import com.buildingaccess.repository.AccessDenialRepository;
 import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.repository.GatePassRepository;
 import com.buildingaccess.repository.UserRepository;
+import com.buildingaccess.service.impl.AccessProcessingServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,6 +59,8 @@ class AccessProcessingServiceTest {
     private AccessDenialRepository accessDenialRepository;
     @Mock
     private GatePassService gatePassService;
+    @Mock
+    private MailService mailService;
 
     private AccessProcessingService service;
 
@@ -67,8 +70,8 @@ class AccessProcessingServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new AccessProcessingService(gatePassRepository, userRepository,
-                entryLogRepository, accessDenialRepository, gatePassService);
+        service = new AccessProcessingServiceImpl(gatePassRepository, userRepository,
+                entryLogRepository, accessDenialRepository, gatePassService, mailService);
 
         building = Building.builder().id(1L).name("Zgrada A").address("Adresa 1").build();
         apartment = Apartment.builder().id(10L).number("12").floor(3).building(building).build();

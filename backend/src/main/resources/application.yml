@@ -25,6 +25,18 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 app:
   jwt:
     # DEV DEFAULT — mora se promeniti (env var JWT_SECRET) pre bilo kakvog javnog/produkcionog deploya.

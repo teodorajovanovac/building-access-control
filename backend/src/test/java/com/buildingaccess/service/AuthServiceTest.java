@@ -11,6 +11,7 @@ import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.repository.ApartmentRepository;
 import com.buildingaccess.repository.UserRepository;
 import com.buildingaccess.security.JwtService;
+import com.buildingaccess.service.impl.AuthServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,7 +51,7 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, apartmentRepository, passwordEncoder, authenticationManager, jwtService);
+        authService = new AuthServiceImpl(userRepository, apartmentRepository, passwordEncoder, authenticationManager, jwtService);
     }
 
     @Test

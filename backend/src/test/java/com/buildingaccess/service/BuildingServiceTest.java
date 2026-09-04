@@ -12,6 +12,7 @@ import com.buildingaccess.repository.BuildingRepository;
 import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.repository.GatePassRepository;
 import com.buildingaccess.repository.UserRepository;
+import com.buildingaccess.service.impl.BuildingServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +50,7 @@ class BuildingServiceTest {
 
     @BeforeEach
     void setUp() {
-        buildingService = new BuildingService(buildingRepository, apartmentRepository, userRepository,
+        buildingService = new BuildingServiceImpl(buildingRepository, apartmentRepository, userRepository,
                 gatePassRepository, entryLogRepository, accessDenialRepository);
     }
 

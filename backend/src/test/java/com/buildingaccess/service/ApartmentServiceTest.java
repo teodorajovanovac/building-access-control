@@ -9,6 +9,7 @@ import com.buildingaccess.model.User;
 import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.repository.ApartmentRepository;
 import com.buildingaccess.repository.GatePassRepository;
+import com.buildingaccess.service.impl.ApartmentServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +41,7 @@ class ApartmentServiceTest {
 
     @BeforeEach
     void setUp() {
-        apartmentService = new ApartmentService(apartmentRepository, gatePassRepository, buildingService);
+        apartmentService = new ApartmentServiceImpl(apartmentRepository, gatePassRepository, buildingService);
     }
 
     @Test

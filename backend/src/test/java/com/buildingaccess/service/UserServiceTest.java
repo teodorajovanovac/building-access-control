@@ -13,6 +13,7 @@ import com.buildingaccess.repository.AccessDenialRepository;
 import com.buildingaccess.repository.EntryLogRepository;
 import com.buildingaccess.repository.GatePassRepository;
 import com.buildingaccess.repository.UserRepository;
+import com.buildingaccess.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,7 +55,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository, passwordEncoder, apartmentService, buildingService,
+        userService = new UserServiceImpl(userRepository, passwordEncoder, apartmentService, buildingService,
                 gatePassRepository, entryLogRepository, accessDenialRepository);
         lenient().when(passwordEncoder.encode(anyString())).thenReturn("ENCODED");
         lenient().when(userRepository.save(any(User.class))).thenAnswer(inv -> {

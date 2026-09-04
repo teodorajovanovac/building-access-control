@@ -14,6 +14,7 @@ import com.buildingaccess.model.enums.GatePassType;
 import com.buildingaccess.model.enums.Role;
 import com.buildingaccess.repository.GatePassRepository;
 import com.buildingaccess.repository.PassStatusHistoryRepository;
+import com.buildingaccess.service.impl.GatePassServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,7 +53,7 @@ class GatePassServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new GatePassService(gatePassRepository, historyRepository);
+        service = new GatePassServiceImpl(gatePassRepository, historyRepository);
         Building building = Building.builder().id(1L).name("Zgrada A").address("Adresa 1").build();
         apartment = Apartment.builder().id(10L).number("12").floor(3).building(building).build();
         resident = User.builder().id(50L).firstName("Stanar").lastName("Stanarić").role(Role.RESIDENT)
