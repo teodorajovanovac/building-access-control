@@ -2,6 +2,7 @@ package com.buildingaccess.service.impl;
 
 import com.buildingaccess.dto.apartment.ApartmentRequest;
 import com.buildingaccess.dto.apartment.ApartmentResponse;
+import com.buildingaccess.exception.DuplicateResourceException;
 import com.buildingaccess.exception.InvalidStatusException;
 import com.buildingaccess.exception.ResourceNotFoundException;
 import com.buildingaccess.mapper.ApartmentMapper;
@@ -59,6 +60,9 @@ public class ApartmentServiceImpl implements ApartmentService {
     @Override
     @Transactional
     public ApartmentResponse create(ApartmentRequest request) {
+        if (apartmentRepository.existsByBuildingIdAndNumber(request.buildingId(), request.number())) {
+            throw new DuplicateResourceException("Stan sa ovim brojem već postoji u toj zgradi!");
+        }
         Building building = buildingService.findEntity(request.buildingId());
         Apartment apartment = new Apartment();
         apartment.setNumber(request.number());
@@ -71,6 +75,9 @@ public class ApartmentServiceImpl implements ApartmentService {
     @Transactional
     public ApartmentResponse update(Long id, ApartmentRequest request) {
         Apartment apartment = findEntity(id);
+        if (apartmentRepository.existsByBuildingIdAndNumberAndIdNot(request.buildingId(), request.number(), id)) {
+            throw new DuplicateResourceException("Stan sa ovim brojem već postoji u toj zgradi!");
+        }
         Building building = buildingService.findEntity(request.buildingId());
         apartment.setNumber(request.number());
         apartment.setFloor(request.floor());

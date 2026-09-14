@@ -12,4 +12,8 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Long> {
     List<Apartment> findByBuildingId(Long buildingId);
 
     Page<Apartment> findByBuildingId(Long buildingId, Pageable pageable);
+
+    boolean existsByBuildingIdAndNumber(Long buildingId, String number);
+
+    boolean existsByBuildingIdAndNumberAndIdNot(Long buildingId, String number, Long id);
 }

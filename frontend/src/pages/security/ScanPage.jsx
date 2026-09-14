@@ -160,7 +160,7 @@ export default function ScanPage() {
               </Button>
             </Stack>
 
-            <Collapse in={cameraOpen}>
+            <Collapse in={cameraOpen} mountOnEnter unmountOnExit>
               <Box sx={{ mt: 1 }}>
                 <QrScannerPanel onScan={handleCameraScan} />
               </Box>

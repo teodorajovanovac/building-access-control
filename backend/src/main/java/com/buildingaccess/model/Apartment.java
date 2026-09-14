@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "apartments")
+@Table(name = "apartments",
+        uniqueConstraints = @UniqueConstraint(name = "uk_apartment_building_number", columnNames = {"building_id", "number"}))
 @Getter
 @Setter
 @NoArgsConstructor

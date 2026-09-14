@@ -20,8 +20,10 @@ public final class UserMapper {
                 user.getBadgeCode() != null ? QrCodeUtil.generateBase64Png(user.getBadgeCode()) : null,
                 user.getApartment() != null ? user.getApartment().getId() : null,
                 user.getApartment() != null ? user.getApartment().getNumber() : null,
-                user.getBuilding() != null ? user.getBuilding().getId() : null,
-                user.getBuilding() != null ? user.getBuilding().getName() : null,
+                user.getBuilding() != null ? user.getBuilding().getId()
+                        : user.getApartment() != null ? user.getApartment().getBuilding().getId() : null,
+                user.getBuilding() != null ? user.getBuilding().getName()
+                        : user.getApartment() != null ? user.getApartment().getBuilding().getName() : null,
                 user.getJobTitle(),
                 user.getCreatedAt()
         );
